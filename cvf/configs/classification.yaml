@@ -1,0 +1,32 @@
+# CVF v1 Classification Config Example
+
+model:
+  family: classification
+  variant: resnet50
+  path: models/FP32/resnet50_eurosat_opset17_torch2.9.0_fp32.onnx
+  target_size: [224, 224]
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+task:
+  type: classification
+  top_k: 5
+  threshold: 0.0
+
+backend:
+  type: onnxruntime
+
+device:
+  type: cpu
+
+pipeline:
+  stages:
+    - preprocess
+    - inference
+    - adapter
+    - postprocess
+    - benchmark
+
+# Global options
+output_dir: outputs
+verbose: true

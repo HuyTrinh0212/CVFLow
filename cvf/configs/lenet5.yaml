@@ -1,0 +1,32 @@
+# CVF v1 LeNet5 Classification Config Example
+
+model:
+  family: classification
+  variant: lenet5
+  path: models/FP32/lenet5_10labels_fp32.onnx
+  target_size: [32, 32]
+  mean: [0.0]
+  std: [1.0]
+
+task:
+  type: classification
+  top_k: 5
+  threshold: 0.0
+
+backend:
+  type: onnxruntime
+
+device:
+  type: cpu
+
+pipeline:
+  stages:
+    - preprocess
+    - inference
+    - adapter
+    - postprocess
+    - benchmark
+
+# Global options
+output_dir: outputs
+verbose: true

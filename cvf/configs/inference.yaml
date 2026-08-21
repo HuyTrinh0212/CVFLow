@@ -1,0 +1,33 @@
+# CVF v1 Inference Config Example
+
+model:
+  family: yolo
+  variant: yolov5
+  path: models/FP32/yolov5s.onnx
+  target_size: [640, 640]
+  mean: [0.0, 0.0, 0.0]
+  std: [1.0, 1.0, 1.0]
+
+task:
+  type: detection
+  conf_threshold: 0.3
+  iou_threshold: 0.5
+  dataset: coco
+
+backend:
+  type: onnxruntime
+
+device:
+  type: cpu
+
+pipeline:
+  stages:
+    - preprocess
+    - inference
+    - adapter
+    - postprocess
+    - benchmark
+
+# Global options
+output_dir: outputs
+verbose: true

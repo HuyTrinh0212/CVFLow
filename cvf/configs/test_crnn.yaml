@@ -1,0 +1,29 @@
+# CVF v1 CRNN HTR Test Config
+
+model:
+  family: crnn
+  variant: crnn
+  path: /home/bht/BHT/AI/Weights/crnn_handwriting/CRNN_HTR&HCR_FP32.onnx
+  target_size: [100, 32]
+  mean: [0.5]
+  std: [0.5]
+
+task:
+  type: htr
+
+backend:
+  type: onnxruntime
+
+device:
+  type: cpu
+
+pipeline:
+  stages:
+    - preprocess
+    - inference
+    - adapter
+    - postprocess
+    - benchmark
+
+output_dir: outputs
+verbose: true

@@ -1,0 +1,31 @@
+# CVF v1 LeNet5 Classification Test Config
+
+model:
+  family: classification
+  variant: lenet5
+  path: /home/bht/BHT/AI/Weights/lenet5_47labels/LeNet5_Numbers&Characters_FP32.onnx
+  target_size: [32, 32]
+  mean: [0.0]
+  std: [1.0]
+
+task:
+  type: classification
+  top_k: 5
+  threshold: 0.0
+
+backend:
+  type: onnxruntime
+
+device:
+  type: cpu
+
+pipeline:
+  stages:
+    - preprocess
+    - inference
+    - adapter
+    - postprocess
+    - benchmark
+
+output_dir: outputs
+verbose: true

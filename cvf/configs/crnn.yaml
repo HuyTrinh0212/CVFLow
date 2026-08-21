@@ -1,0 +1,32 @@
+# CVF v1 CRNN HTR Config Example
+
+model:
+  family: crnn
+  variant: crnn
+  path: models/FP32/crnn_HCR_HTR_fp32.onnx
+  target_size: [100, 32]
+  mean: [0.0]
+  std: [1.0]
+
+task:
+  type: htr
+  method: beam_search
+  beam_size: 10
+
+backend:
+  type: onnxruntime
+
+device:
+  type: cpu
+
+pipeline:
+  stages:
+    - preprocess
+    - inference
+    - adapter
+    - postprocess
+    - benchmark
+
+# Global options
+output_dir: outputs
+verbose: true

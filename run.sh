@@ -1,16 +1,27 @@
 #!/bin/bash
 
 # Check if config file argument provided
-if [ $# -lt 1 ]; then
-    echo "Usage: ./run.sh <config.yaml>"
+if [ $# -lt 2 ]; then
+    echo "Usage: ./run.sh <config.yaml> <image_path> [command]"
+    echo "Commands: run (default), benchmark"
+    echo "Example: ./run.sh cvf/configs/test_yolo.yaml /path/to/image.jpg"
+    echo "         ./run.sh cvf/configs/test_yolo.yaml /path/to/image.jpg benchmark"
     exit 1
 fi
 
 CONFIG_FILE=$1
+IMAGE_PATH=$2
+COMMAND=${3:-run}
 
 # Check if config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "Error: Config file '$CONFIG_FILE' not found"
+    exit 1
+fi
+
+# Check if image exists
+if [ ! -f "$IMAGE_PATH" ]; then
+    echo "Error: Image file '$IMAGE_PATH' not found"
     exit 1
 fi
 
@@ -36,5 +47,12 @@ fi
 echo "Activating conda environment 'xaip'..."
 conda activate xaip
 
-echo "Running with config: $CONFIG_FILE"
-python3 main.py "$CONFIG_FILE"
+echo "Running CVF with config: $CONFIG_FILE"
+echo "Input: $IMAGE_PATH"
+echo "Command: $COMMAND"
+
+if [ "$COMMAND" = "benchmark" ]; then
+    python -m cvf.cli.main benchmark "$CONFIG_FILE"
+else
+    python -m cvf.cli.main run "$CONFIG_FILE" "$IMAGE_PATH"
+fi

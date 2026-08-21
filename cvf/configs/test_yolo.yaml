@@ -1,0 +1,32 @@
+# CVF v1 YOLOv5 Detection Test Config
+
+model:
+  family: yolo
+  variant: yolov5
+  path: /home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_FP32_(INT64).onnx
+  target_size: [640, 640]
+  mean: [0.0, 0.0, 0.0]
+  std: [1.0, 1.0, 1.0]
+
+task:
+  type: detection
+  conf_threshold: 0.3
+  iou_threshold: 0.5
+  dataset: coco
+
+backend:
+  type: onnxruntime
+
+device:
+  type: cpu
+
+pipeline:
+  stages:
+    - preprocess
+    - inference
+    - adapter
+    - postprocess
+    - benchmark
+
+output_dir: outputs
+verbose: true
