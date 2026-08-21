@@ -1,0 +1,4 @@
+from AI_Script.postprocess.postprocessor.get_labels import get_labels
+from AI_Script.postprocess.postprocessor.decode_crnn import decode_crnn
+from AI_Script.postprocess.postprocessor.draw_box import draw_box
+from AI_Script.postprocess.postprocessor.draw_label import draw_label

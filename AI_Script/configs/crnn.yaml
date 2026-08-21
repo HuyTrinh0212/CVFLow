@@ -1,0 +1,13 @@
+weight_path_fp32: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP32/crnn_HCR_HTR_fp32.onnx
+weight_path_fp16: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP16/crnn_HTR_HCR_fp16.onnx
+weight_path_int8: /home/bht/CODE/xaip/AI_Script/pretrained_models/INT8/crnn_HCR_HTR_int8.onnx
+
+model_name: crnn
+task: htr
+target_size: [100, 32]
+mean: 0
+std: 1
+precision_format: fp32
+method: beam_search
+beam_size: 10
+default_postprocess: draw_label

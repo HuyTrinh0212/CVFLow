@@ -1,0 +1,6 @@
+name: xaip
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+prefix: /home/bht/miniconda3/envs/xaip

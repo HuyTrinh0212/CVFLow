@@ -1,0 +1,12 @@
+weight_path_fp32: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP32/lenet5_47labels_fp32.onnx
+weight_path_fp16: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP16/lenet5_47labels_fp16.onnx
+weight_path_int8: /home/bht/CODE/xaip/AI_Script/pretrained_models/INT8/lenet5_47labels_int8_QO_QInt8.onnx
+
+model_name: lenet5
+task: classification
+target_size: [32, 32]
+mean: 0
+std: 1
+precision_format: fp32
+dataset: number
+default_postprocess: draw_label
