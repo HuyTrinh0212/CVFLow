@@ -19,6 +19,10 @@
 *.wmv
 *.m4v
 
+# Model files
+*.onnx
+*.pt
+
 # Cache
 *.cache
 .cache/
