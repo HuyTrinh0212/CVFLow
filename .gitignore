@@ -1,0 +1,29 @@
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.svg
+*.ico
+
+# Videos
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.flv
+*.wmv
+*.m4v
+
+# Cache
+*.cache
+.cache/
+__pycache__/
+*.pyc
+node_modules/
+.env
+.DS_Store
