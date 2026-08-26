@@ -29,17 +29,26 @@ pip install pydantic pyyaml onnxruntime opencv-python numpy scipy
 ### Run Inference
 
 ```bash
+# All inputs are declared in YAML (config-driven)
+
 # YOLOv5 Detection
-python -m cvf.cli.main run cvf/configs/inference.yaml /path/to/image.jpg
+python -m cvf.cli.main run cvf/configs/inference.yaml
 
 # ResNet50 Classification
-python -m cvf.cli.main run cvf/configs/classification.yaml /path/to/image.jpg
+python -m cvf.cli.main run cvf/configs/classification.yaml
 
 # LeNet5 Classification (MNIST-style)
-python -m cvf.cli.main run cvf/configs/lenet5.yaml /path/to/image.png
+python -m cvf.cli.main run cvf/configs/lenet5.yaml
 
 # CRNN HTR (Handwritten Text Recognition)
-python -m cvf.cli.main run cvf/configs/crnn.yaml /path/to/text_image.jpg
+python -m cvf.cli.main run cvf/configs/crnn.yaml
+
+# Optional: override input from config via CLI
+python -m cvf.cli.main run cvf/configs/inference.yaml /path/to/image.jpg
+
+# Via wrapper script (conda env auto-setup)
+./run.sh cvf/configs/inference.yaml
+./run.sh cvf/configs/inference.yaml /path/to/image.jpg
 ```
 
 ### Run Benchmark
@@ -83,6 +92,9 @@ pipeline:
     - adapter
     - postprocess
     - benchmark
+
+input: /path/to/image.jpg
+output_dir: outputs
 ```
 
 CVF Core automatically:
@@ -209,6 +221,7 @@ print(context.stage_timings)    # Per-stage timing
 | `task.conf_threshold` | | Detection confidence threshold |
 | `task.iou_threshold` | | Detection NMS IoU threshold |
 | `task.top_k` | | Classification top-K |
+| `input` | | Input image/video path (CLI arg overrides) |
 | `backend.type` | ✅ | `onnxruntime` |
 | `device.type` | ✅ | `cpu`, `cuda` |
 | `pipeline.stages` | | List of stages to execute |

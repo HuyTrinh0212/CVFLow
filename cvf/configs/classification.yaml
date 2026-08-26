@@ -28,5 +28,6 @@ pipeline:
     - benchmark
 
 # Global options
+input: /home/bht/BHT/AI/Input_Test/images/AnnualCrop_10.jpg
 output_dir: outputs
 verbose: true

@@ -27,5 +27,6 @@ pipeline:
     - postprocess
     - benchmark
 
+input: /home/bht/BHT/AI/Input_Test/images/number3.png
 output_dir: outputs
 verbose: true

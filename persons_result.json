@@ -1,0 +1,70 @@
+{
+  "input": "/home/bht/BHT/AI/Input_Test/images/persons.png",
+  "model": {
+    "family": "yolo",
+    "variant": "yolov5",
+    "path": "/home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_FP32_(INT64).onnx"
+  },
+  "task": {
+    "type": "detection",
+    "conf_threshold": 0.3,
+    "iou_threshold": 0.5,
+    "top_k": 5,
+    "dataset": "coco",
+    "class_names": null,
+    "extra": {}
+  },
+  "result": {
+    "boxes": [
+      [
+        116.69300079345703,
+        372.4100646972656,
+        275.9028625488281,
+        608.7059326171875
+      ],
+      [
+        107.84855651855469,
+        103.74508666992188,
+        228.89588928222656,
+        407.85009765625
+      ],
+      [
+        473.33587646484375,
+        36.595001220703125,
+        633.8966674804688,
+        511.6953430175781
+      ]
+    ],
+    "scores": [
+      0.688880205154419,
+      0.5327624082565308,
+      0.6682721376419067
+    ],
+    "class_ids": [
+      16,
+      0,
+      0
+    ],
+    "image_shape": [
+      640,
+      640
+    ],
+    "class_names": null
+  },
+  "stage_timings_ms": {
+    "preprocess": 33.662950998404995,
+    "inference": 235.78940799961856,
+    "adapter": 19.08359800108883,
+    "postprocess": 0.6032500004948815,
+    "benchmark": 0.0181460000021616
+  },
+  "benchmark_metrics": {
+    "status": "benchmark_not_implemented",
+    "message": "BenchmarkRunner.run() needs implementation",
+    "config": {
+      "warmup_runs": 10,
+      "benchmark_runs": 100
+    }
+  },
+  "evaluation_metrics": null
+}

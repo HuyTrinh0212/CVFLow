@@ -25,5 +25,6 @@ pipeline:
     - postprocess
     - benchmark
 
+input: /home/bht/BHT/AI/Input_Test/images/crnn_novel.jpg
 output_dir: outputs
 verbose: true
