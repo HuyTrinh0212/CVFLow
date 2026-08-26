@@ -22,6 +22,7 @@
 # Model files
 *.onnx
 *.pt
+*.tflite
 
 # Cache
 *.cache
