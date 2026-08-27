@@ -50,6 +50,17 @@ class ONNXRuntimeBackend(InferenceBackend):
         """Run inference using ONNX Runtime."""
         if handle.session is None:
             raise RuntimeError("Model not loaded")
+        # Auto-cast input to expected dtype (e.g. FP16 model expects float16, pipeline gives float32)
+        try:
+            import numpy as np
+            expected_type = handle.session.get_inputs()[0].type  # e.g. "tensor(float16)"
+            if "float16" in expected_type and hasattr(input_tensor, "dtype") and input_tensor.dtype != np.float16:
+                input_tensor = input_tensor.astype(np.float16)
+            elif "float" in expected_type and hasattr(input_tensor, "dtype") and input_tensor.dtype == np.float16:
+                # Keep float16 if expected; otherwise no cast needed (float models accept float32)
+                pass
+        except Exception:
+            pass  # fallback to original tensor on any introspection failure
         return handle.session.run(handle.output_names, {handle.input_name: input_tensor})
     
     def unload(self, handle: Any) -> None:

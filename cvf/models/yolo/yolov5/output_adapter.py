@@ -41,6 +41,9 @@ class YOLOv5DetectionAdapter:
         if self.transpose_output and outputs.ndim == 3:
             outputs = np.transpose(outputs, (0, 2, 1))
         
+        # Cast FP16 to FP32 to avoid overflow in NMS/postprocess (onnxruntime returns float16 for FP16 model)
+        if isinstance(outputs, np.ndarray) and outputs.dtype == np.float16:
+            outputs = outputs.astype(np.float32)
         # Squeeze batch dimension
         prediction = outputs.squeeze(0)
         

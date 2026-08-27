@@ -27,6 +27,11 @@ class DetectionPostprocessor:
         """Non-maximum suppression."""
         if len(boxes) == 0:
             return np.array([], dtype=int)
+        # Cast FP16 to FP32 to avoid overflow (640*640 > 65504)
+        if boxes.dtype == np.float16:
+            boxes = boxes.astype(np.float32)
+        if scores.dtype == np.float16:
+            scores = scores.astype(np.float32)
         
         x1, y1, x2, y2 = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
         areas = (x2 - x1) * (y2 - y1)

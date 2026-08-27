@@ -27,10 +27,19 @@ class ClassificationOutput:
         return float(self.scores[0]) if len(self.scores) > 0 else 0.0
     
     def to_dict(self) -> dict:
+        # Human-readable top-k names
+        top_names = None
+        if self.class_names:
+            try:
+                top_names = [self.class_names[int(i)] if 0 <= int(i) < len(self.class_names) else str(int(i)) for i in self.class_ids]
+            except Exception:
+                top_names = None
         return {
             "logits": self.logits.tolist(),
             "probabilities": self.probabilities.tolist(),
             "class_ids": self.class_ids.tolist(),
             "scores": self.scores.tolist(),
             "class_names": self.class_names,
+            "top_class_names": top_names,
+            "top1_name": top_names[0] if top_names else None,
         }

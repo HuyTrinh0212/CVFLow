@@ -11,6 +11,16 @@ class ResNet50ClassificationAdapter:
     
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
+        # Resolve class_names from merged model+task config (AdapterStage forwards task_class_names/dataset)
+        # Priority: model.class_names > task.task_class_names > dataset registry
+        if not self.config.get("class_names") and self.config.get("task_class_names"):
+            self.config["class_names"] = self.config["task_class_names"]
+        # Dataset registry fallback (correct order from main: AI_Script/configs/datasets.json eurosat)
+        if not self.config.get("class_names") and self.config.get("dataset") == "eurosat":
+            self.config["class_names"] = [
+                "Forest", "River", "Highway", "AnnualCrop", "SeaLake",
+                "HerbaceousVegetation", "Industrial", "Residential", "PermanentCrop", "Pasture"
+            ]
     
     def adapt(self, raw_output: Any) -> ClassificationOutput:
         """
@@ -30,6 +40,8 @@ class ResNet50ClassificationAdapter:
         
         # Squeeze batch dimension
         logits = outputs.squeeze(0)
+        if isinstance(logits, np.ndarray) and logits.dtype == np.float16:
+            logits = logits.astype(np.float32)
         
         # Apply softmax to get probabilities
         probs = softmax(logits)

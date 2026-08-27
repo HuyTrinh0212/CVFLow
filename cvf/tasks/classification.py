@@ -40,12 +40,28 @@ class ClassificationPostprocessor:
         top_scores = top_scores[mask]
         top_classes = top_classes[mask]
         
+        # Resolve class_names: task config > adapter output > dataset registry (correct order from main: AI_Script/configs/datasets.json)
+        class_names = self.config.class_names
+        if not class_names:
+            # Preserve adapter-provided names (e.g. dataset fallback via AdapterStage)
+            class_names = output.class_names
+        if not class_names and task_config and getattr(task_config, "dataset", None) == "eurosat":
+            class_names = [
+                "Forest", "River", "Highway", "AnnualCrop", "SeaLake",
+                "HerbaceousVegetation", "Industrial", "Residential", "PermanentCrop", "Pasture"
+            ]
+        elif not class_names and task_config and isinstance(task_config, dict) and task_config.get("dataset") == "eurosat":
+            class_names = [
+                "Forest", "River", "Highway", "AnnualCrop", "SeaLake",
+                "HerbaceousVegetation", "Industrial", "Residential", "PermanentCrop", "Pasture"
+            ]
+        
         return ClassificationOutput(
             logits=output.logits,
             probabilities=probs,
             class_ids=top_classes,
             scores=top_scores,
-            class_names=self.config.class_names,
+            class_names=class_names,
         )
 
 

@@ -6,13 +6,14 @@ from pathlib import Path
 
 
 class ResNet50Preprocessor:
-    """ResNet50 preprocessing: resize, center crop, normalize (ImageNet style)."""
+    """ResNet50 preprocessing: EuroSAT style (matches main: AI_Script/preprocess/classification/resnet.py)."""
     
     def __init__(self, config: dict):
         self.config = config
         self.target_size = tuple(config.get("target_size", (224, 224)))
-        self.mean = np.array(config.get("mean", [0.485, 0.456, 0.406]), dtype=np.float32)
-        self.std = np.array(config.get("std", [0.229, 0.224, 0.225]), dtype=np.float32)
+        # Correct EuroSAT mean/std from main branch (not ImageNet)
+        self.mean = np.array(config.get("mean", [0.3445, 0.3803, 0.4077]), dtype=np.float32)
+        self.std = np.array(config.get("std", [0.0915, 0.0652, 0.0553]), dtype=np.float32)
     
     def load_image(self, input_data: Union[str, np.ndarray, Path]) -> np.ndarray:
         """Load image from path or return array directly."""
@@ -43,7 +44,7 @@ class ResNet50Preprocessor:
         # Normalize to [0, 1]
         img = img.astype(np.float32) / 255.0
         
-        # Normalize with ImageNet mean/std
+        # Normalize with EuroSAT mean/std (main branch)
         img = (img - self.mean) / self.std
         
         # HWC -> CHW

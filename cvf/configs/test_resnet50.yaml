@@ -1,32 +1,46 @@
-# CVF v1 ResNet50 Classification Test Config
-
 model:
   family: classification
   variant: resnet50
   path: /home/bht/BHT/AI/Weights/resnet_eurosat/ResNet-50_Eurosat_FP32.onnx
-  target_size: [224, 224]
-  mean: [0.485, 0.456, 0.406]
-  std: [0.229, 0.224, 0.225]
-
+  target_size:
+  - 224
+  - 224
+  mean:
+  - 0.3445
+  - 0.3803
+  - 0.4077
+  std:
+  - 0.0915
+  - 0.0652
+  - 0.0553
+  class_names: &id001
+  - Forest
+  - River
+  - Highway
+  - AnnualCrop
+  - SeaLake
+  - HerbaceousVegetation
+  - Industrial
+  - Residential
+  - PermanentCrop
+  - Pasture
 task:
   type: classification
   top_k: 5
   threshold: 0.0
-
+  dataset: eurosat
+  class_names: *id001
 backend:
   type: onnxruntime
-
 device:
   type: cpu
-
 pipeline:
   stages:
-    - preprocess
-    - inference
-    - adapter
-    - postprocess
-    - benchmark
-
+  - preprocess
+  - inference
+  - adapter
+  - postprocess
+  - benchmark
 input: /home/bht/BHT/AI/Input_Test/images/AnnualCrop_10.jpg
 output_dir: outputs
 verbose: true

@@ -168,12 +168,12 @@ CVF Core automatically:
 
 ## Supported Models
 
-| Family | Variant | Task | Input | Output |
-|--------|---------|------|-------|--------|
-| YOLO | yolov5 | Detection | 640×640 RGB | `DetectionOutput(boxes, scores, class_ids)` |
-| ResNet | resnet50 | Classification | 224×224 RGB | `ClassificationOutput(logits, probs, top-k)` |
-| ResNet | lenet5 | Classification | 32×32 Gray | `ClassificationOutput(logits, probs, top-k)` |
-| CRNN | crnn | HTR | 100×32 Gray | `HTROutput(text, confidence)` |
+| Family | Variant | Task | Input | Output | Notes |
+|--------|---------|------|-------|--------|-------|
+| YOLO | yolov5 | Detection | 640×640 RGB | `DetectionOutput(boxes, scores, class_ids)` | Supports FP32/FP16/Mixed FP32+INT8; video via frame-by-frame pipeline |
+| Classification | resnet50 | Classification (EuroSAT) | 224×224 RGB | `ClassificationOutput(logits, probs, top-k, top_class_names, top1_name)` | EuroSAT normalization `mean [0.3445,0.3803,0.4077] std [0.0915,0.0652,0.0553]` (see `AI_Script/preprocess/classification/resnet.py`); dataset `eurosat` order `Forest,River,Highway,AnnualCrop,SeaLake,HerbaceousVegetation,Industrial,Residential,PermanentCrop,Pasture`; FP16 auto-cast in `cvf/backends/onnxruntime.py:51` |
+| Classification | lenet5 | Classification | 32×32 Gray | `ClassificationOutput(logits, probs, top-k, top_class_names)` | MNIST-style 47-class variant; FP16 logits cast to FP32 |
+| CRNN | crnn | HTR | 100×32 Gray | `HTROutput(text, confidence)` | |
 
 ---
 
@@ -202,6 +202,9 @@ context = pipeline(tensor)
 
 # Access results
 print(context.task_result)      # DetectionOutput/ClassificationOutput/HTROutput
+# ClassificationOutput now includes human-readable labels when dataset/class_names set:
+#   ClassificationOutput(... class_names=[10 EuroSAT], top_class_names=[..], top1_name="Highway")
+print(context.task_result.to_dict()["top_class_names"])  # e.g. ["Highway", "Industrial", ...]
 print(context.benchmark_metrics) # Latency, throughput
 print(context.stage_timings)    # Per-stage timing
 ```
@@ -216,13 +219,16 @@ print(context.stage_timings)    # Per-stage timing
 | `model.variant` | ✅ | `yolov5`, `resnet50`, `lenet5`, `crnn` |
 | `model.path` | ✅ | Path to `.onnx` model |
 | `model.target_size` | | `[H, W]` for preprocessing |
-| `model.mean` / `model.std` | | Normalization values |
+| `model.mean` / `model.std` | | Normalization values – **ResNet50 EuroSAT**: `[0.3445,0.3803,0.4077]` / `[0.0915,0.0652,0.0553]` (not ImageNet) |
 | `task.type` | ✅ | `detection`, `classification`, `htr` |
+| `task.dataset` | | Dataset for label mapping: `coco`, `eurosat` (`eurosat` auto-provides 10 names to `class_names`) |
+| `task.class_names` | | Explicit label list – forwarded to adapter via `cvf/core/pipeline/stages/adapter.py:13` (`model.class_names` / `task_class_names` merged) |
 | `task.conf_threshold` | | Detection confidence threshold |
-| `task.iou_threshold` | | Detection NMS IoU threshold |
+| `task.iou_threshold` | | Detection NMS IoU threshold (FP16-safe, `cvf/tasks/detection.py:30`) |
 | `task.top_k` | | Classification top-K |
-| `input` | | Input image/video path (CLI arg overrides) |
-| `backend.type` | ✅ | `onnxruntime` |
+| `task.threshold` | | Classification score threshold |
+| `input` | | Input image/video path (CLI arg overrides; `.mp4/.avi/.mov` triggers video pipeline `cvf/cli/main.py:202`) |
+| `backend.type` | ✅ | `onnxruntime` (FP16 input auto-cast `cvf/backends/onnxruntime.py:51`) |
 | `device.type` | ✅ | `cpu`, `cuda` |
 | `pipeline.stages` | | List of stages to execute |
-| `output_dir` | | Output directory for artifacts |
+| `output_dir` | | Output directory for artifacts (contains `*_result.json` with `top_class_names/top1_name` `cvf/core/contracts/runtime/classification.py:30` + `*_vis.jpg/.mp4`) |

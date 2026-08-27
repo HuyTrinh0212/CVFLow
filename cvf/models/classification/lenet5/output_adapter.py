@@ -11,6 +11,9 @@ class LeNet5ClassificationAdapter:
     
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
+        # Support task_class_names forwarded by AdapterStage (task ↔ model separation)
+        if not self.config.get("class_names") and self.config.get("task_class_names"):
+            self.config["class_names"] = self.config["task_class_names"]
     
     def adapt(self, raw_output: Any) -> ClassificationOutput:
         """
@@ -30,6 +33,9 @@ class LeNet5ClassificationAdapter:
         
         # Squeeze batch dimension
         logits = outputs.squeeze(0)
+        # Cast FP16 to FP32 to avoid softmax precision issues
+        if isinstance(logits, np.ndarray) and logits.dtype == np.float16:
+            logits = logits.astype(np.float32)
         
         # Apply softmax to get probabilities
         probs = softmax(logits)
