@@ -14,6 +14,10 @@ from AI_Script.postprocess.Functions.Boxes_Steps import unletterbox
 class DrawBox(BasePostprocessor):
     def __init__(self, config=None):
         super().__init__(config)
+        if not self.config.get("output_path") or not str(self.config.get("output_path")).strip():
+            raise ValueError("'output_path' is required in config (no default).")
+        self.output_path = os.path.abspath(str(self.config.get("output_path")).strip())
+        os.makedirs(self.output_path, exist_ok=True)
         self.dataset = str(self.config.get("dataset"))
         self.model_name = str(self.config.get("model_name"))
         self.target_size = tuple(self.config.get("target_size"))
@@ -138,7 +142,7 @@ class DrawBox(BasePostprocessor):
 
         # Save and display the result
         if save:
-            save_path = os.path.join(PROJECT_ROOT, f"outputs/{self.model_name} | {self.precision_format} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')}.jpg")
+            save_path = os.path.join(self.output_path, f"{self.model_name} | {self.precision_format} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')}.jpg")
             cv2.imwrite(save_path, image)
             print(f"Image are saved as {save_path}")
         return image

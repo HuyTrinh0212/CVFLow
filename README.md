@@ -100,7 +100,7 @@ xaip/
 |-----|-------------|---------|
 | `input_path` | Path to input (image, folder, video, npy) | Required |
 | `weight_path` | Path to ONNX model weights | Required |
-| `output_path` | Output directory for results | `cwd/outputs/` |
+| `output_path` | Output directory for results | **Required** (no default) |
 | `model_name` | Model name (yolov5, crnn, resnet, lenet) | Required |
 | `precision_format` | Precision (int8, fp32, fp16) | Required |
 | `inference_mode` | Standard inference | `true` |
@@ -109,4 +109,5 @@ xaip/
 | `tracking_option` | Enable ByteTrack tracking | `false` |
 
 > **Note**: Only one mode can be active at a time (inference/debug/evaluate).
-> `output_path` directory is created automatically if it doesn't exist.
+> `output_path` is **required** (no default). The directory is created automatically if it doesn't exist. If missing/empty, the run fails with `Error: 'output_path' is required in config.yaml`.
+> Benchmark charts (`benchmark_dashboard`) are also saved under `output_path/Benchmark_Chart_{timestamp}/`.

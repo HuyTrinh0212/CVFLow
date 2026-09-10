@@ -8,16 +8,18 @@ from AI_Script.evaluate.factory_evaluate import EvaluateFactory
 from AI_Script.core.utils import check_file
 import json
 from datetime import datetime
-from AI_Script.core.utils import PROJECT_ROOT
 
 
 class Pipeline_Evaluate:
     def __init__(self, config):
         self.config = config
+        if not self.config.get("output_path") or not str(self.config.get("output_path")).strip():
+            raise ValueError("'output_path' is required in config (no default).")
+        self.output_path = os.path.abspath(str(self.config.get("output_path")).strip())
+        os.makedirs(self.output_path, exist_ok=True)
         self.model_name = str(self.config.get("model_name"))
         self.precision_format = str(self.config.get("precision_format"))
         self.weight_path = self._get_weight_path()
-        self.outputs_path = os.path.join(PROJECT_ROOT, "outputs")
 
         # pre-process -> AI inference -> evaluate
         self.preprocessor = PreprocessorFactory.create(config=config)
@@ -103,7 +105,7 @@ class Pipeline_Evaluate:
             final_results["Evaluate"]["overall_metrics"].update(evaluate_total)
 
             # Save evaluate
-            save_path = os.path.join(PROJECT_ROOT, f"outputs/evaluate - {self.model_name} - {self.precision_format} - CPU - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.json")
+            save_path = os.path.join(self.output_path, f"evaluate - {self.model_name} - {self.precision_format} - CPU - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.json")
             with open(save_path, "w", encoding="utf-8") as f:
                 json.dump(final_results, f, ensure_ascii=False, indent=5)
             print(f"Saved evaluate to {save_path}")

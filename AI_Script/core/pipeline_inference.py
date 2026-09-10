@@ -2,14 +2,21 @@ import os
 from AI_Script.models.factory_model import ModelFactory
 from AI_Script.preprocess.factory_preprocess import PreprocessorFactory
 from AI_Script.postprocess.factory_postprocess import PostprocessorFactory
-from AI_Script.core.utils import check_file, PROJECT_ROOT
+from AI_Script.core.utils import check_file
 import cv2
 from datetime import datetime
 
 class Pipeline_Inference:
     def __init__(self, config):
         self.config = config
+        if not self.config.get("output_path") or not str(self.config.get("output_path")).strip():
+            raise ValueError("'output_path' is required in config (no default).")
+        self.output_path = os.path.abspath(str(self.config.get("output_path")).strip())
+        os.makedirs(self.output_path, exist_ok=True)
         self.model_name = str(self.config.get("model_name"))
+        # Display flag - default False for headless (only save final video)
+        display_val = self.config.get("display", self.config.get("display_option", False))
+        self.display = bool(display_val) if isinstance(display_val, bool) else str(display_val).lower() in ("true", "1", "yes")
 
         # pre-process -> AI inference -> post-process
         self.preprocessor = PreprocessorFactory.create(config=self.config)
@@ -73,7 +80,7 @@ class Pipeline_Inference:
             print(f"Height video = {height}")
 
             # Initialize video writer
-            output_path = os.path.join(PROJECT_ROOT, f"outputs/{self.model_name} video_detection {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.mkv")
+            output_path = os.path.join(self.output_path, f"{self.model_name} video_detection {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.mkv")
             if output_path:
                 fourcc = cv2.VideoWriter_fourcc(*'FFV1')
                 out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
@@ -90,22 +97,24 @@ class Pipeline_Inference:
                 # Step 2: post-process
                 result_2 = self.postprocessor(result_1, frame, False)
 
-                # Display frame
-                cv2.imshow('ByteTrack Original Implementation', result_2)
+                # Display frame (optional, default False for headless)
+                if self.display:
+                    cv2.imshow('ByteTrack Original Implementation', result_2)
 
-                # Save frame
+                # Save frame (always)
                 if output_path:
                     out.write(result_2)
 
-                # out loop if push 'q'
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                # out loop if push 'q' (only when display is enabled)
+                if self.display and (cv2.waitKey(1) & 0xFF == ord('q')):
                     break
 
             # Cleanup
             cap.release()
             if output_path:
                 out.release()
-            cv2.destroyAllWindows()
+            if self.display:
+                cv2.destroyAllWindows()
 
             # DONE
             print(f"Video are saved in {output_path}")

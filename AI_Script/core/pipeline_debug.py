@@ -1,18 +1,23 @@
 import os
+import re
+import hashlib
 from AI_Script.models.factory_model import ModelFactory
 from AI_Script.preprocess.factory_preprocess import PreprocessorFactory
 from AI_Script.postprocess.factory_postprocess import PostprocessorFactory
-from AI_Script.core.utils import check_file, PROJECT_ROOT
+from AI_Script.core.utils import check_file
 import numpy as np
 import onnx
 from onnx import helper, shape_inference
-from datetime import datetime
-import pickle
 import json
+import glob
 
 class Pipeline_Debug:
     def __init__(self, config):
         self.config = config
+        if not self.config.get("output_path") or not str(self.config.get("output_path")).strip():
+            raise ValueError("'output_path' is required in config (no default).")
+        self.output_path = os.path.abspath(str(self.config.get("output_path")).strip())
+        os.makedirs(self.output_path, exist_ok=True)
         self.model_name = str(self.config.get("model_name"))
         self.precision_format = str(self.config.get("precision_format"))
         self.model_path = self._get_model_path()
@@ -115,10 +120,18 @@ class Pipeline_Debug:
                     print(f"Warning: dtype for {name} not found")
 
         # Lưu lại model tạm
-        temp_model_path = os.path.join(PROJECT_ROOT, "outputs/dump_model.onnx")
+        temp_model_path = os.path.join(self.output_path, "dump_model.onnx")
         onnx.save(model, temp_model_path)
         self.config["weight_path"] = str(temp_model_path)
         print(f"==Model are dump in {temp_model_path}==")
+
+    def _sanitize_layer_name(self, name: str) -> str:
+        # Replace illegal characters, truncate to 200 chars
+        sanitized = re.sub(r'[^A-Za-z0-9._-]', '_', name)
+        sanitized = sanitized.strip('_') or 'unnamed'
+        if len(sanitized) > 200:
+            sanitized = sanitized[:200]
+        return sanitized
 
     def _sort_right_index(self, data):
         model = onnx.load(self.model_path)
@@ -127,92 +140,94 @@ class Pipeline_Debug:
 
         dict = {}
         for i, node in enumerate(graph.node):
+            if not node.output:
+                continue
             output_name = str(list(node.output)[0])
-            dict[output_name] = data[output_name]
+            if output_name in data:
+                dict[output_name] = data[output_name]
+        # Include any remaining keys not in graph order (e.g., initializers) at end sorted
+        for k in sorted(set(data.keys()) - set(dict.keys())):
+            dict[k] = data[k]
         return dict
 
     def run(self, input_source):
         input_type = check_file(input_source)
 
-        # --- Case 1: single image ---
-        if input_type in ['image_path', 'npy_path', 'numpy_array']:
-            print("Detected single input. Processing...")
-            # Step 1: pre-process -> ai-inference
-            (result_1, profiling) = self._process_single_item(input_source)
-            # Step 2: post-process
-            result_2 = self.postprocessor(result_1, input_source)
+        # Debug mode only supports single image input
+        if input_type not in ['image_path', 'npy_path', 'numpy_array']:
+            raise ValueError(
+                f"Debug mode only supports single image input (image_path/npy_path/numpy_array), got '{input_type}'. "
+                f"Folder and video inputs are not supported in debug_mode."
+            )
 
-            # Preprocessing Profiler
+        print("Detected single input. Processing...")
+        # Step 1: pre-process -> ai-inference
+        (result_1, profiling) = self._process_single_item(input_source)
+        # Step 2: post-process
+        result_2 = self.postprocessor(result_1, input_source)
 
+        # Collect intermediate outputs
+        out = {}
+        output_names = [o.name for o in self.model.session.get_outputs()]
+        for name, value in zip(output_names, result_1):
+            out[str(name)] = {
+                "dtype": str(value.dtype),
+                "shape": self._get_shape(value),
+                "values": value.tolist(),
+            }
 
-            # Save intermediate output into pickle file
-            out = {}
-            output_names = [o.name for o in self.model.session.get_outputs()]
-            for name, value in zip(output_names, result_1):
-                out[str(name)] = {
-                    "dtype": str(value.dtype),
-                    "shape": self._get_shape(value),
-                    "values": value.tolist(),
-                }
+        # Sort to right index (topological order)
+        if self.model_name != 'crnn':
+            out = self._sort_right_index(out)
 
-            # Sort to right index
-            if self.model_name != 'crnn':
-                out = self._sort_right_index(out)
+        # Save each layer as separate JSON in intermediate_outputs/
+        intermediate_dir = os.path.join(self.output_path, "intermediate_outputs")
+        os.makedirs(intermediate_dir, exist_ok=True)
 
-            # Save
-            output_path = os.path.join(PROJECT_ROOT, f"outputs/Output intermediate layer - {self.model_name} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.json")
-            # Save intermediate
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(out, f, ensure_ascii=False, indent=4)
-            # Save profiling
-            print(f"Output profiling are saved in {profiling}")
-            print(f"Output intermediate layer are saved in {output_path}")
-
-        # --- Case 2: folder images ---
-        elif input_type == 'folder_path':
-            print(f"Detected batch input (folder). Processing each item...")
+        # Clean previous intermediate outputs to avoid stale files
+        for old_file in glob.glob(os.path.join(intermediate_dir, "*.json")):
             try:
-                image_files = sorted(
-                    [f for f in os.listdir(input_source) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
-                if not image_files:
-                    print(f"Warning: No images found in folder {input_source}")
-                    return []
-            except FileNotFoundError:
-                print(f"Error: Folder not found at {input_source}")
-                return []
+                os.remove(old_file)
+            except OSError:
+                pass
 
-            out = {}
-            for filename in image_files:
-                item_path = os.path.join(input_source, filename)
-                try:
-                    dict_format = {}
-                    # Step 1: pre-process -> ai-inference
-                    result_1 = self._process_single_item(item_path)
-                    # Step 2: post-process
-                    result_2 = self.postprocessor(result_1, item_path)
-                    # Intermediate
-                    output_names = [o.name for o in self.model.session.get_outputs()]
-                    for name, value in zip(output_names, result_1):
-                        dict_format[str(name)] = {
-                            "dtype": str(value.dtype),
-                            "shape": self._get_shape(value),
-                            "values": value.tolist(),
-                        }
-                    out[str(filename)] = dict_format
+        seen_sanitized = {}
+        saved_count = 0
+        for idx, (layer_name, layer_data) in enumerate(out.items()):
+            sanitized = self._sanitize_layer_name(layer_name)
+            # Handle collisions after sanitization
+            if sanitized in seen_sanitized:
+                short_hash = hashlib.md5(layer_name.encode()).hexdigest()[:6]
+                sanitized = f"{sanitized}_{short_hash}"
+                # Truncate again if needed
+                if len(sanitized) > 200:
+                    sanitized = sanitized[:200]
+            seen_sanitized[sanitized] = layer_name
 
-                except Exception as e:
-                    print(f"    ! Failed to process {filename}. Error: {e}")
-            # SAVE
-            output_pickle = os.path.join(PROJECT_ROOT, f"outputs/Output intermediate layer - {self.model_name} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.pkl")
-            with open(output_pickle, "wb") as f:
-                pickle.dump(out, f)
+            file_name = f"{idx:04d}__{sanitized}.json"
+            file_path = os.path.join(intermediate_dir, file_name)
+            payload = {
+                "layer_name": layer_name,
+                "index": idx,
+                "dtype": layer_data["dtype"],
+                "shape": layer_data["shape"],
+                "values": layer_data["values"],
+            }
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, indent=2)
+            saved_count += 1
 
-        else:
-            raise ValueError(f"Unsupported input type: {input_type}")
+        print(f"Output profiling are saved in {profiling}")
+        print(f"Output intermediate layers are saved in {intermediate_dir} ({saved_count} files)")
 
-        # # Clean memory
-        # if os.path.exists(str(self.config["weight_path"])):
-        #     os.remove(str(self.config["weight_path"]))
+        # Clean up temp dump model
+        dump_path = str(self.config.get("weight_path", ""))
+        if dump_path and os.path.basename(dump_path) == "dump_model.onnx" and os.path.exists(dump_path):
+            try:
+                os.remove(dump_path)
+                print(f"Cleaned temp dump model: {dump_path}")
+            except OSError as e:
+                print(f"Warning: could not remove temp dump model {dump_path}: {e}")
 
 
     def __call__(self, input_source):

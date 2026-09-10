@@ -1,11 +1,11 @@
+import os
 import os.path
 from abc import ABC, abstractmethod
 import onnxruntime as ort
 import numpy as np
-from AI_Script.core.utils import PROJECT_ROOT
 
 class BaseModel(ABC):
-    def __init__(self, config: dict = None, debug_mode = False):
+    def __init__(self, config: dict | None = None, debug_mode = False):
         self.config = config or {}
         self.debug_mode = debug_mode
         self.model_name = str(self.config.get("model_name"))
@@ -17,7 +17,12 @@ class BaseModel(ABC):
         sess_options = ort.SessionOptions()
         sess_options.enable_profiling = True
         sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        sess_options.profile_file_prefix = os.path.join(PROJECT_ROOT, f"outputs/Output profiler - {self.model_name} ")
+        output_path = self.config.get("output_path")
+        if not output_path or not str(output_path).strip():
+            raise ValueError("'output_path' is required in config (no default).")
+        output_path = os.path.abspath(str(output_path).strip())
+        os.makedirs(output_path, exist_ok=True)
+        sess_options.profile_file_prefix = os.path.join(output_path, f"Output profiler - {self.model_name} ")
         return sess_options
 
     def load_model(self):

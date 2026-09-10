@@ -1,3 +1,4 @@
+import os
 import os.path
 
 import numpy as np
@@ -7,7 +8,6 @@ import cv2
 from AI_Script.core.utils import check_file
 from PIL import Image
 from datetime import datetime
-from AI_Script.core.utils import PROJECT_ROOT
 from AI_Script.postprocess.postprocessor.get_labels.get_labels import GetLabel
 from AI_Script.postprocess.postprocessor.decode_crnn.decode_crnn import DecodeCRNN
 
@@ -15,9 +15,12 @@ from AI_Script.postprocess.postprocessor.decode_crnn.decode_crnn import DecodeCR
 class DrawLabel(BasePostprocessor):
     def __init__(self, config=None):
         super().__init__(config)
+        if not self.config.get("output_path") or not str(self.config.get("output_path")).strip():
+            raise ValueError("'output_path' is required in config (no default).")
+        self.output_path = os.path.abspath(str(self.config.get("output_path")).strip())
+        os.makedirs(self.output_path, exist_ok=True)
         self.name_model = str(self.config.get("model_name"))
         self.task = str(self.config.get("task"))
-        self.output_path = os.path.join(PROJECT_ROOT, "outputs")
         self._adapters = {
             'classification': self._classification,
             'htr': self._htr

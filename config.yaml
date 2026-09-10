@@ -2,12 +2,12 @@
 
 # Input/Output paths
 input_path: "/home/bht/CODE/xaip/AI_Script/inputs/videos/3.mp4"
-weight_path: "/home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_INT8_(FP32_INT32_INT64).onnx"
-output_path: "/home/bht/TEST/xaip/outputs"
+weight_path: "/home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_FP32.onnx"
+output_path: "/home/bht/Downloads/test_xaip"  # Required - no default, all outputs saved here
 
 # Model configuration
 model_name: "yolov5"
-precision_format: "int8"
+precision_format: "fp32"
 
 # Target device configuration
 target:
@@ -19,4 +19,5 @@ debug_mode: false
 evaluate_mode: false
 
 # Option configuration
-tracking_option: true
+tracking_option: false
+display: false  # true = show real-time window + q to interrupt, false = headless only save (default)

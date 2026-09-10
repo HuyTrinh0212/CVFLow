@@ -3,7 +3,6 @@ import time
 import json
 from datetime import datetime
 import os
-from AI_Script.core.utils import PROJECT_ROOT
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,6 +10,17 @@ import itertools
 
 
 class Pipeline_Benchmark:
+    def __init__(self, config=None):
+        self.config = config or {}
+        if "output_path" in self.config:
+            output_path = self.config.get("output_path")
+            if not output_path or not str(output_path).strip():
+                raise ValueError("'output_path' is required in config (no default).")
+            self.output_path = os.path.abspath(str(output_path).strip())
+            os.makedirs(self.output_path, exist_ok=True)
+        else:
+            # Allow standalone usage without config, but require output_path via config for option A
+            self.output_path = None
     def _annotate_bars(self, ax, rects, fmt="{:.3f}", y_offset=0.01):
         """Annotate a list of bar containers (rects) with their heights."""
         for rect in rects:
@@ -222,8 +232,15 @@ class Pipeline_Benchmark:
     def run(self, input_source):
         input_source_1, input_source_2 = input_source
 
-        # Init parameter
-        output_folder = os.path.join(PROJECT_ROOT, f"outputs/Benchmark_Chart_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}")
+        # Init parameter - Option A: use output_path from config
+        if not self.output_path:
+            # Fallback: try to get from config if set after init (factory re-sets)
+            output_path = self.config.get("output_path") if self.config else None
+            if not output_path or not str(output_path).strip():
+                raise ValueError("'output_path' is required in config (no default) for benchmark_dashboard.")
+            self.output_path = os.path.abspath(str(output_path).strip())
+            os.makedirs(self.output_path, exist_ok=True)
+        output_folder = os.path.join(self.output_path, f"Benchmark_Chart_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}")
         os.makedirs(output_folder, exist_ok=True)
 
         # Load

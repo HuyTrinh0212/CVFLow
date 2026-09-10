@@ -13,12 +13,27 @@ config_path = sys.argv[1]
 with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
-# Handle output_path - default to cwd/outputs/
-output_path = config.get("output_path", os.path.join(os.getcwd(), "outputs"))
-os.makedirs(output_path, exist_ok=True)
+# Handle output_path - required, no default
+if "output_path" not in config or config["output_path"] is None or not str(config["output_path"]).strip():
+    print("Error: 'output_path' is required in config.yaml (no default). Please set output_path: /path/to/output/dir")
+    sys.exit(1)
+output_path = os.path.abspath(str(config["output_path"]).strip())
+if os.path.exists(output_path) and not os.path.isdir(output_path):
+    print(f"Error: output_path is a file, not a directory: {output_path}")
+    sys.exit(1)
+try:
+    os.makedirs(output_path, exist_ok=True)
+except PermissionError as e:
+    print(f"Error: Cannot create output_path '{output_path}': {e}")
+    sys.exit(1)
 
 # Target device config
 target_device = config.get("target", {}).get("device", "cpu")
+
+# Display option config (default False for headless)
+display = config.get("display", config.get("display_option", False))
+# Ensure boolean type
+display = bool(display) if isinstance(display, bool) else str(display).lower() in ("true", "1", "yes")
 
 # INIT
 factory = factory_pipeline(
@@ -30,6 +45,7 @@ factory = factory_pipeline(
     evaluate_mode=config["evaluate_mode"],
     # option
     tracking_option=config["tracking_option"],
+    display=display,
     # overwrite
     weight_path=config["weight_path"],
     output_path=output_path,

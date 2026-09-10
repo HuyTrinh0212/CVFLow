@@ -13,18 +13,28 @@ class factory_pipeline:
                  model_name,
                  weight_path=None,
                  precision_format=None,
-                 output_path=os.path.join(PROJECT_ROOT, "outputs"),
+                 output_path=None,
                  inference_mode=True,
                  debug_mode=False,
                  evaluate_mode=False,
                  tracking_option=False,
+                 display=False,
                  target_device="cpu"):
+        # Validate output_path - required, no default
+        if output_path is None or not str(output_path).strip():
+            raise ValueError("'output_path' is required (no default). Please provide output_path via config.yaml.")
+        output_path = os.path.abspath(str(output_path).strip())
+        if os.path.exists(output_path) and not os.path.isdir(output_path):
+            raise NotADirectoryError(f"output_path is a file, not a directory: {output_path}")
+        os.makedirs(output_path, exist_ok=True)
+
         # init parameters
         self.model_name = model_name
         self.weight_path = weight_path
         self.precision_format = precision_format
         self.output_path = output_path
         self.tracking_option = tracking_option
+        self.display = bool(display) if isinstance(display, bool) else str(display).lower() in ("true", "1", "yes")
         self.target_device = target_device
 
         # mode
@@ -34,7 +44,12 @@ class factory_pipeline:
 
         # Load model config
         self.config = self.load_config(self.model_name)
-        self.pipe_benchmark = Pipeline_Benchmark()
+        # Inject output_path into config for all pipelines/models/postprocessors (Option A: single source of truth)
+        self.config["output_path"] = self.output_path
+        # Inject display flag (default False for headless)
+        self.config["display"] = self.display
+        self.config["display_option"] = self.display  # compat alias
+        self.pipe_benchmark = Pipeline_Benchmark(config=self.config)
         self.pipe_compare_intermediate = Pipeline_Compare_Intermediate()
 
         # Overwrite
@@ -44,6 +59,10 @@ class factory_pipeline:
             self.config['precision_format'] = str(self.precision_format)
         if self.target_device:
             self.config['target_device'] = str(self.target_device)
+        # Re-ensure output_path and display remain after overwrites
+        self.config["output_path"] = self.output_path
+        self.config["display"] = self.display
+        self.config["display_option"] = self.display
 
         # Init pipeline
         self.pipeline = self._get_pipeline()
