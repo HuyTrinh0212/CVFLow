@@ -1,3 +1,3 @@
-from .classification import resnet, lenet5
-from .detection import yolo
+from .classification import resnet, lenet5, vit
+from .detection import yolo, detr
 from .HTR import CRNN

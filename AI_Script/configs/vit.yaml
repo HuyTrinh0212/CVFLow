@@ -1,0 +1,10 @@
+weight_path_fp32: /home/bht/BHT/AI/Weights/vit_imagenet/Vision_Transformer_ViT_FP32.onnx
+weight_path_fp16: /home/bht/BHT/AI/Weights/vit_imagenet/Vision_Transformer_ViT_FP16.onnx
+weight_path_int8: /home/bht/BHT/AI/Weights/vit_imagenet/Vision_Transformer_ViT_Mixed_FP32_INT8.onnx
+
+model_name: vit
+task: classification
+target_size: [224, 224]
+precision_format: fp32
+dataset: imagenet
+default_postprocess: draw_label

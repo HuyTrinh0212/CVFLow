@@ -7,6 +7,7 @@ class Adapter:
         self.transpose = transpose
         self._adapters = {
             'yolov5': self._adapter_yolov5,
+            'detr': self._adapter_detr,
         }
 
         if self.name_model not in self._adapters:
@@ -44,5 +45,25 @@ class Adapter:
             'boxes': boxes_xyxy,
             'conf': conf.squeeze(1),
             'class': class_ids.squeeze(1)
+        }
+        return output_dict
+
+    def _adapter_detr(self, raw_outputs):
+        # RT-DETR: [1, 300, 84] = [cx, cy, w, h (normalized 0-1), c0..c79]
+        # No objectness score (unlike YOLOv5)
+        outputs = raw_outputs[0]
+        prediction = outputs.squeeze(0)
+
+        boxes = prediction[:, :4]
+        boxes_xyxy = xywh_to_xyxy(boxes)
+
+        class_scores = prediction[:, 4:]
+        conf = np.max(class_scores, axis=1)
+        class_ids = np.argmax(class_scores, axis=1)
+
+        output_dict = {
+            'boxes': boxes_xyxy,
+            'conf': conf,
+            'class': class_ids
         }
         return output_dict

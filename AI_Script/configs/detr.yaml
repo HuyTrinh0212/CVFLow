@@ -1,0 +1,16 @@
+weight_path_fp32: /home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_FP32.onnx
+weight_path_fp16: /home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_FP16.onnx
+weight_path_int8: /home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_Mixed_FP32_INT8.onnx
+
+# Default config
+model_name: detr
+task: object_detection
+target_size: [640, 640]
+mean: [0.0, 0.0, 0.0]
+std: [1.0, 1.0, 1.0]
+precision_format: fp32
+conf_threshold: 0.3
+iou_threshold: 0.5
+transpose_output: False
+dataset: coco
+default_postprocess: draw_box
