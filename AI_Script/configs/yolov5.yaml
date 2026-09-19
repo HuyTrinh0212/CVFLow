@@ -1,6 +1,7 @@
 weight_path_fp32: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP32/yolov5s.onnx
 weight_path_fp16: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP16/yolov5s_fp16.onnx
 weight_path_int8: /home/bht/CODE/xaip/AI_Script/pretrained_models/INT8/yolov5s_COCO_int8.onnx
+weight_path_bf16: /home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_BF16_with_cast.onnx
 
 # Default config
 model_name: yolov5

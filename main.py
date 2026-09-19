@@ -47,9 +47,10 @@ factory = factory_pipeline(
     tracking_option=config["tracking_option"],
     display=display,
     # overwrite
-    weight_path=config["weight_path"],
+    weight_path=config.get("weight_path"),
     output_path=output_path,
-    target_device=target_device
+    target_device=target_device,
+    dataset=config.get("dataset", None)
 )
 
 # RUN

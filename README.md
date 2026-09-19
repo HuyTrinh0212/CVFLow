@@ -102,7 +102,7 @@ xaip/
 | `weight_path` | Path to ONNX model weights | Required |
 | `output_path` | Output directory for results | **Required** (no default) |
 | `model_name` | Model name (yolov5, crnn, resnet, lenet) | Required |
-| `precision_format` | Precision (int8, fp32, fp16) | Required |
+| `precision_format` | Precision (int8, fp32, fp16, bf16) | Required |
 | `inference_mode` | Standard inference | `true` |
 | `debug_mode` | Profile model performance | `false` |
 | `evaluate_mode` | Run evaluation benchmarks | `false` |

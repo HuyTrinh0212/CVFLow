@@ -1,6 +1,7 @@
 weight_path_fp32: /home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_FP32.onnx
 weight_path_fp16: /home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_FP16.onnx
 weight_path_int8: /home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_Mixed_FP32_INT8.onnx
+weight_path_bf16: /home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_BF16_with_cast.onnx
 
 # Default config
 model_name: detr

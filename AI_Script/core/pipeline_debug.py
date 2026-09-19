@@ -42,6 +42,8 @@ class Pipeline_Debug:
                 return str(self.config.get("weight_path_fp16"))
             elif self.precision_format == 'int8':
                 return str(self.config.get("weight_path_int8"))
+            elif self.precision_format == 'bf16':
+                return str(self.config.get("weight_path_bf16"))
             else:
                 raise FileNotFoundError(f"No support precision format: {self.precision_format}")
 

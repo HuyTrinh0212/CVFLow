@@ -50,6 +50,11 @@ class BaseModel(ABC):
                 if self.debug_mode:
                     return ort.InferenceSession(weight_path_int8, self.onnx_sess_options, providers=providers)
                 return ort.InferenceSession(weight_path_int8, providers=providers)
+            elif self.precision_format == 'bf16':
+                weight_path_bf16 = str(self.config.get("weight_path_bf16"))
+                if self.debug_mode:
+                    return ort.InferenceSession(weight_path_bf16, self.onnx_sess_options, providers=providers)
+                return ort.InferenceSession(weight_path_bf16, providers=providers)
             else:
                 raise FileNotFoundError(f"No support precision format: {self.precision_format}")
 

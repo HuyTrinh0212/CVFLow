@@ -1,6 +1,7 @@
 weight_path_fp32: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP32/resnet50_eurosat_fp32.onnx
 weight_path_fp16: /home/bht/CODE/xaip/AI_Script/pretrained_models/FP16/resnet50_eurosat_fp16.onnx
 weight_path_int8: /home/bht/CODE/xaip/AI_Script/pretrained_models/INT8/resnet50_eurosat_Q0_QInt8.onnx
+weight_path_bf16: /home/bht/BHT/AI/Weights/resnet_eurosat/ResNet-50_Eurosat_BF16_with_cast.onnx
 
 model_name: resnet50
 task: classification
