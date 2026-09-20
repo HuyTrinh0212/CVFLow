@@ -26,7 +26,7 @@ conda activate xaip
 #### 2. Install Dependencies
 
 ```bash
-pip install onnxruntime opencv-python numpy pyyaml torch torchvision
+pip install onnx onnxruntime opencv-python numpy pyyaml torch torchvision pillow scikit-learn matplotlib pandas
 ```
 
 For GPU support (CUDA):
@@ -38,6 +38,8 @@ pip install onnxruntime-gpu torch torchvision --index-url https://download.pytor
 
 ```bash
 python main.py config.yaml
+# Or start from a schema-only template:
+python main.py config_templates/yolov5.yaml
 ```
 
 ---
@@ -49,48 +51,74 @@ xaip/
 ├── main.py                    # Entry point (accepts config.yaml as argument)
 ├── run.sh                     # Auto-setup script (conda env + run)
 ├── environment.yml            # Conda environment (python=3.12)
-├── config.yaml                # Pipeline configuration (paths, model, modes)
-├── configs/                   # Model configurations (YAML)
-├── inputs/                    # Input data (images, videos)
-├── outputs/                   # Output results (created automatically)
+├── config.yaml                # Example pipeline configuration
+├── config_templates/          # Schema-only templates per model (/path/to/...)
 └── AI_Script/                 # Core pipeline
     ├── core/                  # Pipelines (inference, tracking, debug, evaluate, benchmark)
-    ├── models/                # Model implementations (YOLOv5, CRNN, ResNet, LeNet)
-    ├── preprocess/            # Preprocessing (YOLO, CRNN, Classification)
-    ├── postprocess/           # Postprocessing (draw boxes, decode CRNN, etc.)
-    ├── tracker/               # ByteTrack implementation
-    └── evaluate/              # Evaluation tasks
+    ├── configs/               # Internal model configs + datasets.json (label sets)
+    ├── models/                # Model implementations (yolov5, detr, lenet5, resnet50, vit, crnn)
+    ├── preprocess/            # Preprocessing (YOLO, DETR, CRNN, Classification)
+    ├── postprocess/           # Postprocessing (draw boxes/labels, decode CRNN, etc.)
+    ├── tracker/               # ByteTrack implementation (detection models only)
+    ├── evaluate/              # Evaluation tasks
+    └── Functions/             # Helper scripts (charts, dataset formatting, etc.)
 ```
+
+---
+
+## Models
+
+| `model_name` | Task | Default `dataset` |
+|--------------|------|-------------------|
+| `yolov5` | object_detection | `coco` (`dota_satellite`/`dota` also available) |
+| `detr` | object_detection | `coco` |
+| `lenet5` | classification | `number_character` (47 labels) |
+| `resnet50` | classification | `eurosat` (10 labels) |
+| `vit` | classification | `imagenet` (1000 labels) |
+| `crnn` | htr | (none - no `dataset` key) |
+
+> **Note**: `resnet` is a code alias only; configs use `resnet50`. Label sets live in `AI_Script/configs/datasets.json` (`coco 80, dota_satellite 16, dota 15, number_character 47, eurosat 10, imagenet 1000`).
 
 ---
 
 ## Modes (in main.py)
 
-| Mode | Description |
-|------|-------------|
-| `inference_mode=True` | Standard inference |
-| `tracking_option=True` | Enable ByteTrack object tracking |
-| `debug_mode=True` | Profile model performance |
-| `evaluate_mode=True` | Run evaluation benchmarks |
+| Mode | Description | Accepted input |
+|------|-------------|----------------|
+| `inference_mode=True` | Standard inference | image, video, folder |
+| `tracking_option=True` (+ inference) | ByteTrack object tracking (detection models, video only) | video |
+| `debug_mode=True` | Profile model + dump intermediate layers | single image only |
+| `evaluate_mode=True` | Run evaluation benchmarks (folder must contain `images/` + `labels/`) | folder only |
+
+> **Note**: Only one mode can be active at a time. If multiple flags are `true`, `inference_mode` wins (`factory.py` precedence: inference → debug → evaluate).
 
 ---
 
 ## Input Types Supported
 
 - Single image: `image_path`, `npy_path`, `numpy_array`
-- Folder of images: `folder_path`
+- Folder of images: `folder_path` (evaluate: must contain `images/` + `labels/` subfolders)
 - Video file: `video_path`
+
+---
+
+## Outputs (under `output_path/`)
+
+- Inference image: annotated `.jpg`
+- Inference/tracking video: `.mkv` (`video_detection` / `video_tracking` with IDs)
+- Debug: annotated `.jpg` + profiler `.json` + `intermediate_outputs/` (per-layer jsons)
+- Evaluate: `evaluate - <model> - <precision> - CPU - <timestamp>.json` (+ `Benchmark_Chart_<timestamp>/` for `benchmark_dashboard`)
 
 ---
 
 ## Requirements
 
 - Python 3.12
-- ONNX Runtime (CPU or GPU)
-- OpenCV
-- NumPy
-- PyYAML
-- PyTorch (for ByteTrack tracker)
+- ONNX + ONNX Runtime (CPU or GPU)
+- OpenCV, NumPy, PyYAML, Pillow
+- PyTorch + torchvision (ByteTrack tracker)
+- scikit-learn (evaluation metrics)
+- matplotlib + pandas (benchmark charts)
 
 ---
 
@@ -98,15 +126,18 @@ xaip/
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `input_path` | Path to input (image, folder, video, npy) | Required |
-| `weight_path` | Path to ONNX model weights | Required |
+| `input_path` | Path to input (image, folder, video, npy; mode-dependent, see Modes) | Required |
+| `weight_path` | Path to ONNX model weights (overrides internal weight; `precision_format` then acts as label only) | Required |
 | `output_path` | Output directory for results | **Required** (no default) |
-| `model_name` | Model name (yolov5, crnn, resnet, lenet) | Required |
-| `precision_format` | Precision (int8, fp32, fp16, bf16) | Required |
+| `model_name` | Model name (yolov5, detr, lenet5, resnet50, vit, crnn) | Required |
+| `precision_format` | Precision (fp32, fp16, int8, bf16) | Required |
+| `dataset` | Label set override (optional; defaults per model, see Models) | Per-model default |
+| `target.device` | Inference device | `cpu` (`cpu` \| `gpu`) |
 | `inference_mode` | Standard inference | `true` |
 | `debug_mode` | Profile model performance | `false` |
 | `evaluate_mode` | Run evaluation benchmarks | `false` |
-| `tracking_option` | Enable ByteTrack tracking | `false` |
+| `tracking_option` | Enable ByteTrack tracking (detection + video only) | `false` |
+| `display` | Show real-time window (`q` to interrupt); `false` = headless save only | `false` |
 
 > **Note**: Only one mode can be active at a time (inference/debug/evaluate).
 > `output_path` is **required** (no default). The directory is created automatically if it doesn't exist. If missing/empty, the run fails with `Error: 'output_path' is required in config.yaml`.
