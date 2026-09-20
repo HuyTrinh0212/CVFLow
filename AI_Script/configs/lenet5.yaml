@@ -9,5 +9,5 @@ target_size: [32, 32]
 mean: 0
 std: 1
 precision_format: fp32
-dataset: number
+dataset: number_character
 default_postprocess: draw_label

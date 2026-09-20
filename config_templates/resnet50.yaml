@@ -1,0 +1,27 @@
+# Template: ResNet-50 (classification, dataset=eurosat)
+# Usage: python main.py config_templates/resnet50.yaml
+# NOTE: schema only - replace /path/to/... with real paths.
+# NOTE: model_name must be "resnet50" ("resnet" alias has no configs/resnet.yaml).
+
+# Input/Output paths
+input_path: "/path/to/input"   # single image (.png/.jpg) | video (.mp4/.avi/.mov/.mkv) | folder (evaluate: must contain images/ + labels/)
+weight_path: "/path/to/model.onnx"  # overrides internal weight; precision_format still required as label
+output_path: "/path/to/output"  # Required - no default, all outputs saved here
+
+# Model configuration
+model_name: "resnet50"
+precision_format: "fp32"  # Options: fp32 | fp16 | int8 | bf16
+dataset: "eurosat"  # See AI_Script/configs/datasets.json
+
+# Target device configuration
+target:
+  device: "cpu"  # Options: cpu | gpu
+
+# Mode configuration (exactly one mode true)
+inference_mode: true
+debug_mode: false    # debug: single image input only
+evaluate_mode: false # evaluate: folder input (images/ + labels/) only
+
+# Option configuration
+tracking_option: false  # keep false: tracking is detection-only (ByteTrack)
+display: false  # true = show real-time window + q to interrupt, false = headless only save
