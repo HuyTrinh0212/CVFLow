@@ -1,0 +1,19 @@
+# Evaluate: RT-DETR (object_detection, dataset=coco, 80 labels)
+# Dataset: 10 COCO val images (sample)
+input_path: "/home/bht/Downloads/xaip-test/Evaluate-test/sample_datasets/COCO_Val_2017_10Images"
+weight_path: "/home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_FP32.onnx"
+output_path: "/home/bht/Downloads/xaip-test/Evaluate-test"
+
+model_name: "detr"
+precision_format: "fp32"
+dataset: "coco"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: false
+evaluate_mode: true
+
+tracking_option: false
+display: false

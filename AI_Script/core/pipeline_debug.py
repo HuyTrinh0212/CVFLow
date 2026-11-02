@@ -73,11 +73,22 @@ class Pipeline_Debug:
             if init.name not in vi_info:
                 vi_info[init.name] = (init.data_type, list(init.dims))
 
-        # Collect all input/output tensors
+        # Collect all input/output tensors.
+        # Optimization (config key "debug_dump_initializers", default False): do NOT expose
+        # initializers (weights/bias) as graph outputs. They are already stored inside the
+        # .onnx file on disk; dumping them as JSON bloats RAM (tolist ~8x expansion) and disk
+        # for no debug value. Set the key to true to restore the old behavior.
+        # Empty tensor names ("") are optional inputs and cannot be dumped - skip them.
+        include_init = bool(self.config.get("debug_dump_initializers", False))
+        initializer_names = {init.name for init in model.graph.initializer}
         tensors_to_dump = set()
         for node in model.graph.node:
-            tensors_to_dump.update(node.input)
-            tensors_to_dump.update(node.output)
+            for name in node.input:
+                if name and (include_init or name not in initializer_names):
+                    tensors_to_dump.add(name)
+            for name in node.output:
+                if name:
+                    tensors_to_dump.add(name)
 
         def get_dtype_for_tensor(name):
             dtype = next((vi.type.tensor_type.elem_type for vi in inferred_model.graph.value_info if vi.name == name),
@@ -121,6 +132,16 @@ class Pipeline_Debug:
                 else:
                     print(f"Warning: dtype for {name} not found")
 
+        # Release the explicit binding to the shape-inference copy after its last use.
+        # (The dtype-check closure still holds a reference, so the copy is reaped when
+        # this method returns - i.e. before the session is created and inference runs.)
+        del inferred_model
+
+        # Precompute the topological layer order ONCE from this graph (first output of each
+        # node, in node order). Replaces _sort_right_index, which re-loaded the ONNX file on
+        # every run just to recover the same order.
+        self._layer_order = [str(list(node.output)[0]) for node in model.graph.node if node.output]
+
         # Lưu lại model tạm
         temp_model_path = os.path.join(self.output_path, "dump_model.onnx")
         onnx.save(model, temp_model_path)
@@ -134,23 +155,6 @@ class Pipeline_Debug:
         if len(sanitized) > 200:
             sanitized = sanitized[:200]
         return sanitized
-
-    def _sort_right_index(self, data):
-        model = onnx.load(self.model_path)
-        onnx.checker.check_model(model)
-        graph = model.graph
-
-        dict = {}
-        for i, node in enumerate(graph.node):
-            if not node.output:
-                continue
-            output_name = str(list(node.output)[0])
-            if output_name in data:
-                dict[output_name] = data[output_name]
-        # Include any remaining keys not in graph order (e.g., initializers) at end sorted
-        for k in sorted(set(data.keys()) - set(dict.keys())):
-            dict[k] = data[k]
-        return dict
 
     def run(self, input_source):
         input_type = check_file(input_source)
@@ -168,19 +172,22 @@ class Pipeline_Debug:
         # Step 2: post-process
         result_2 = self.postprocessor(result_1, input_source)
 
-        # Collect intermediate outputs
-        out = {}
+        # Stream intermediate outputs to disk layer-by-layer instead of holding every
+        # layer's tolist() in memory at once (the main cause of OOM on large models).
         output_names = [o.name for o in self.model.session.get_outputs()]
-        for name, value in zip(output_names, result_1):
-            out[str(name)] = {
-                "dtype": str(value.dtype),
-                "shape": self._get_shape(value),
-                "values": value.tolist(),
-            }
+        name_to_result = dict(zip(output_names, result_1))
+        del result_1
 
-        # Sort to right index (topological order)
-        if self.model_name != 'crnn':
-            out = self._sort_right_index(out)
+        if self.model_name == 'crnn':
+            # Keep session output order as before (no topological re-sort for crnn)
+            layer_names = list(output_names)
+        else:
+            # Topological order computed once in _dump_model; leftover tensors (e.g.,
+            # secondary node outputs, original graph outputs) appended sorted, matching
+            # the old _sort_right_index result without re-loading the model.
+            ordered = [n for n in self._layer_order if n in name_to_result]
+            leftover = sorted(set(name_to_result) - set(ordered))
+            layer_names = ordered + leftover
 
         # Save each layer as separate JSON in intermediate_outputs/
         intermediate_dir = os.path.join(self.output_path, "intermediate_outputs")
@@ -195,7 +202,20 @@ class Pipeline_Debug:
 
         seen_sanitized = {}
         saved_count = 0
-        for idx, (layer_name, layer_data) in enumerate(out.items()):
+        for idx, layer_name in enumerate(layer_names):
+            value = name_to_result.pop(layer_name, None)
+            if value is None:
+                continue
+            payload = {
+                "layer_name": layer_name,
+                "index": idx,
+                "dtype": str(value.dtype),
+                "shape": self._get_shape(value),
+                "values": value.tolist(),
+            }
+            # Free this layer's numpy array and Python-list representation immediately
+            del value
+
             sanitized = self._sanitize_layer_name(layer_name)
             # Handle collisions after sanitization
             if sanitized in seen_sanitized:
@@ -208,15 +228,9 @@ class Pipeline_Debug:
 
             file_name = f"{idx:04d}__{sanitized}.json"
             file_path = os.path.join(intermediate_dir, file_name)
-            payload = {
-                "layer_name": layer_name,
-                "index": idx,
-                "dtype": layer_data["dtype"],
-                "shape": layer_data["shape"],
-                "values": layer_data["values"],
-            }
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f, ensure_ascii=False, indent=2)
+            del payload
             saved_count += 1
 
         print(f"Output profiling are saved in {profiling}")

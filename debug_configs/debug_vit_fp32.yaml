@@ -1,0 +1,18 @@
+# Debug: vit (fp32) - random test image
+input_path: "/home/bht/BHT/AI/Input_Test/images/cat.jpg"
+weight_path: "/home/bht/BHT/AI/Weights/vit_imagenet/Vision_Transformer_ViT_FP32.onnx"
+output_path: "/home/bht/Downloads/xaip-test/Debug/vit"
+
+model_name: "vit"
+precision_format: "fp32"
+dataset: "imagenet"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: true
+evaluate_mode: false
+
+tracking_option: false
+display: false

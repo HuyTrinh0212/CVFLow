@@ -1,0 +1,18 @@
+# Debug: lenet5 (fp32) - random test image
+input_path: "/home/bht/BHT/AI/Input_Test/images/lenet_number8.png"
+weight_path: "/home/bht/BHT/AI/Weights/lenet5_number_character/LeNet5_Numbers&Characters_FP32.onnx"
+output_path: "/home/bht/Downloads/xaip-test/Debug/lenet5"
+
+model_name: "lenet5"
+precision_format: "fp32"
+dataset: "number_character"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: true
+evaluate_mode: false
+
+tracking_option: false
+display: false

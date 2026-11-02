@@ -1,0 +1,20 @@
+# Debug: yolov5 dota_satellite variant (fp32) - random test image
+# Note: model_name must be "yolov5"; DOTA variant selected via dataset + weight_path.
+input_path: "/home/bht/BHT/AI/Input_Test/images/yolov5_dota_aircraft.png"
+weight_path: "/home/bht/BHT/AI/Weights/yolov5_dota_satellite/Yolov5s_DOTA_Satellite_FP32.onnx"
+output_path: "/home/bht/Downloads/xaip-test/Debug/yolov5_dota"
+
+model_name: "yolov5"
+precision_format: "fp32"
+dataset: "dota_satellite"
+input_dtype: "fp32"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: true
+evaluate_mode: false
+
+tracking_option: false
+display: false

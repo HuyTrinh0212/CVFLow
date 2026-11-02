@@ -151,6 +151,7 @@ All 7 model variants × 5 labels are verified to run on CPU (35/35 configs in `t
 | `precision_format` | Precision label: `fp32` \| `fp16` \| `int8` (Mixed/W8A8) \| `bf16` — see Precision Formats | Required |
 | `input_dtype` | Force model input tensor dtype (`fp32` \| `fp16`); default derived from precision label | Auto |
 | `graph_optimization_level` | ORT graph optimization: `disable` \| `basic` \| `extended` \| `all` | `all` |
+| `debug_dump_initializers` | Debug mode only: also dump weight/bias initializers as JSON layers | `false` |
 | `dataset` | Label set override (optional; defaults per model, see Models) | Per-model default |
 | `target.device` | Inference device | `cpu` (`cpu` \| `gpu`) |
 | `inference_mode` | Standard inference | `true` |

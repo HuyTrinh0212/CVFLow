@@ -1,0 +1,19 @@
+# Evaluate: LeNet-5 (classification, dataset=number_character, 47 labels)
+# Dataset: 10 EMNIST-47 images (sample)
+input_path: "/home/bht/Downloads/xaip-test/Evaluate-test/sample_datasets/Dataset_MNIST_47Labels_10img"
+weight_path: "/home/bht/BHT/AI/Weights/lenet5_number_character/LeNet5_Numbers&Characters_FP32.onnx"
+output_path: "/home/bht/Downloads/xaip-test/Evaluate-test"
+
+model_name: "lenet5"
+precision_format: "fp32"
+dataset: "number_character"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: false
+evaluate_mode: true
+
+tracking_option: false
+display: false
