@@ -1,0 +1,32 @@
+# Template: YOLOv5 DOTA Satellite (object_detection, dataset=dota_satellite, 16 classes old order)
+# Usage: python main.py config_templates/yolov5_dota.yaml
+# NOTE: schema only - replace /path/to/... with real paths.
+
+# Input/Output paths
+input_path: "/path/to/input"   # single image (.png/.jpg) | video (.mp4/.avi/.mov/.mkv) | folder (evaluate: must contain images/ + labels/)
+weight_path: "/path/to/model.onnx"  # overrides internal weight; precision_format still required as label
+output_path: "/path/to/output"  # Required - no default, all outputs saved here
+
+# Model configuration
+model_name: "yolov5"
+precision_format: "fp32"  # Options: fp32 | fp16 | int8 | bf16
+dataset: "dota_satellite"  # See AI_Script/configs/datasets.json (16 labels, old order)
+
+# Precision notes (verified with real weights):
+#   fp32 -> *_FP32.onnx | int8 -> *_Mixed_FP32_INT8.onnx (Mixed FP32-INT8) | bf16 -> *_BF16_with_cast.onnx
+#   ALL DOTA exports keep FP32 input (even *_FP16.onnx) -> keep input_dtype: "fp32" below,
+#   otherwise the fp16 preprocessor cast makes the session fail with an input dtype mismatch.
+input_dtype: "fp32"  # Options: fp32 | fp16 (default derived from precision_format)
+
+# Target device configuration
+target:
+  device: "cpu"  # Options: cpu | gpu
+
+# Mode configuration (exactly one mode true)
+inference_mode: true
+debug_mode: false    # debug: single image input only
+evaluate_mode: false # evaluate: folder input (images/ + labels/) only
+
+# Option configuration
+tracking_option: false  # true = ByteTrack tracking (video input only); false = detection only
+display: false  # true = show real-time window + q to interrupt, false = headless only save

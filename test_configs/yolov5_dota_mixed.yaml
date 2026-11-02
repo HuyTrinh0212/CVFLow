@@ -1,0 +1,19 @@
+# Test config - YOLOv5 DOTA Satellite (16-class, old order) | MX (Mixed FP32-INT8) | inference (single image)
+# Weight: new export at /home/bht/Downloads/Weights/YOLO5 (verifies fp32 IO like other Mixed exports)
+input_path: "/home/bht/BHT/AI/Input_Test/images/yolov5_dota_aircraft.jpg"
+weight_path: "/home/bht/Downloads/Weights/YOLO5/Yolov5s_DOTA_Satellite_Mixed_FP32_INT8.onnx"
+output_path: "/home/bht/Downloads/xaip-test/yolov5_dota/mixed/"
+
+model_name: "yolov5"
+precision_format: "int8"
+dataset: "dota_satellite"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

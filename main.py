@@ -35,6 +35,14 @@ display = config.get("display", config.get("display_option", False))
 # Ensure boolean type
 display = bool(display) if isinstance(display, bool) else str(display).lower() in ("true", "1", "yes")
 
+# Config keys handled explicitly below; everything else is forwarded (extras)
+_HANDLED_KEYS = {
+    "input_path", "output_path", "model_name", "precision_format", "weight_path",
+    "target", "inference_mode", "debug_mode", "evaluate_mode",
+    "tracking_option", "display", "display_option", "dataset",
+}
+extras = {k: v for k, v in config.items() if k not in _HANDLED_KEYS}
+
 # INIT
 factory = factory_pipeline(
     model_name=config["model_name"],
@@ -50,7 +58,8 @@ factory = factory_pipeline(
     weight_path=config.get("weight_path"),
     output_path=output_path,
     target_device=target_device,
-    dataset=config.get("dataset", None)
+    dataset=config.get("dataset", None),
+    extras=extras
 )
 
 # RUN

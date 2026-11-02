@@ -1,0 +1,20 @@
+# Test config - ViT (ImageNet, 1000 classes) | MX (Mixed FP32-INT8) | inference (single image)
+# precision_format "int8" = code key selecting the *_Mixed_FP32_INT8.onnx weight
+# NOTE: vit preprocessor switches to torchvision-style resize+center-crop when "int8" is in precision_format (AI_Script/preprocess/classification/vit.py:68)
+input_path: "/home/bht/BHT/AI/Input_Test/images/cat.jpg"
+weight_path: "/home/bht/BHT/AI/Weights/vit_imagenet/Vision_Transformer_ViT_Mixed_FP32_INT8.onnx"
+output_path: "/home/bht/Downloads/xaip-test/vit/mixed/"
+
+model_name: "vit"
+precision_format: "int8"
+dataset: "imagenet"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

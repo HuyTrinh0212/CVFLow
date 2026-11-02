@@ -1,0 +1,18 @@
+# Test config - RT-DETR (COCO) | FP16 | inference (single image)
+input_path: "/home/bht/BHT/AI/Input_Test/images/yolov5_coco2017_persons.png"
+weight_path: "/home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_FP16.onnx"
+output_path: "/home/bht/Downloads/xaip-test/detr/fp16/"
+
+model_name: "detr"
+precision_format: "fp16"
+dataset: "coco"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

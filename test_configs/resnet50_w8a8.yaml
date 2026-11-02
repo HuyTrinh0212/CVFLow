@@ -1,0 +1,19 @@
+# Test config - ResNet-50 (EuroSAT, 10 classes) | W8A8 (INT8 dynamic quant, FP32 IO) | inference (single image)
+input_path: "/home/bht/BHT/AI/Input_Test/images/resnet_eurosat_highway.png"
+weight_path: "/home/bht/BHT/AI/Weights/resnet_eurosat/ResNet-50_Eurosat_INT8_dynamic_W8A8.onnx"
+output_path: "/home/bht/Downloads/xaip-test/resnet50/w8a8/"
+
+# precision_format "int8" = code key for INT8-quantized weights (W8A8 dynamic: weight INT8, FP32 IO)
+model_name: "resnet50"
+precision_format: "int8"
+dataset: "eurosat"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

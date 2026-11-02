@@ -1,0 +1,19 @@
+# Test config - RT-DETR (COCO) | MX (Mixed FP32-INT8) | inference (single image)
+# precision_format "int8" = code key selecting the *_Mixed_FP32_INT8.onnx weight (passed explicitly)
+input_path: "/home/bht/BHT/AI/Input_Test/images/yolov5_coco2017_persons.png"
+weight_path: "/home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_Mixed_FP32_INT8.onnx"
+output_path: "/home/bht/Downloads/xaip-test/detr/mixed/"
+
+model_name: "detr"
+precision_format: "int8"
+dataset: "coco"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

@@ -81,6 +81,24 @@ xaip/
 
 ---
 
+## Precision Formats
+
+`precision_format` is the label only; the weight file is selected by `weight_path`:
+
+| Label | Weight family | Input IO | Extra keys needed |
+|-------|---------------|----------|--------------------|
+| `fp32` | `*_FP32.onnx` | fp32 | — |
+| `fp16` | `*_FP16.onnx` | fp16 (auto-cast) | — except the 2 files below |
+| `int8` | `*_Mixed_FP32_INT8.onnx` (static quant) or `*_INT8_dynamic_W8A8.onnx` (dynamic quant) | fp32 | — |
+| `bf16` | `*_BF16_with_cast.onnx` (cast inside graph) | fp32 | — |
+
+All 7 model variants × 5 labels are verified to run on CPU (35/35 configs in `test_configs/`). Two per-file quirks, already set in the templates:
+
+- **YOLOv5 DOTA** FP16 weight keeps FP32 IO → `input_dtype: "fp32"` (default in `config_templates/yolov5_dota.yaml`)
+- **CRNN** FP16 weight needs `graph_optimization_level: "extended"` (default in `config_templates/crnn.yaml`)
+
+---
+
 ## Modes (in main.py)
 
 | Mode | Description | Accepted input |
@@ -130,7 +148,9 @@ xaip/
 | `weight_path` | Path to ONNX model weights (overrides internal weight; `precision_format` then acts as label only) | Required |
 | `output_path` | Output directory for results | **Required** (no default) |
 | `model_name` | Model name (yolov5, detr, lenet5, resnet50, vit, crnn) | Required |
-| `precision_format` | Precision (fp32, fp16, int8, bf16) | Required |
+| `precision_format` | Precision label: `fp32` \| `fp16` \| `int8` (Mixed/W8A8) \| `bf16` — see Precision Formats | Required |
+| `input_dtype` | Force model input tensor dtype (`fp32` \| `fp16`); default derived from precision label | Auto |
+| `graph_optimization_level` | ORT graph optimization: `disable` \| `basic` \| `extended` \| `all` | `all` |
 | `dataset` | Label set override (optional; defaults per model, see Models) | Per-model default |
 | `target.device` | Inference device | `cpu` (`cpu` \| `gpu`) |
 | `inference_mode` | Standard inference | `true` |

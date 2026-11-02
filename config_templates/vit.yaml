@@ -10,7 +10,14 @@ output_path: "/path/to/output"  # Required - no default, all outputs saved here
 # Model configuration
 model_name: "vit"
 precision_format: "fp32"  # Options: fp32 | fp16 | int8 | bf16
-dataset: "imagenet"  # See AI_Script/configs/datasets.json
+dataset: "imagenet"  # See AI_Script/configs/datasets.json (1000 labels)
+
+# Precision notes (verified with real weights):
+#   fp32 -> *_FP32.onnx | int8 -> *_Mixed_FP32_INT8.onnx (Mixed FP32-INT8) | bf16 -> *_BF16_with_cast.onnx
+#   FP16 weight has FP16 input -> input auto-cast to fp16 (no extra key needed)
+#   int8/bf16 weights have FP32 input  -> input stays fp32   (no extra key needed)
+#   NOTE: precision "int8" switches the preprocessor to torchvision-style resize+center-crop
+#         (AI_Script/preprocess/classification/vit.py); fp32/fp16/bf16 use the manual path.
 
 # Target device configuration
 target:

@@ -1,0 +1,19 @@
+# Test config - CRNN (handwriting HTR/HCR) | W8A8 (INT8 dynamic quant, FP32 IO) | inference (single image)
+# NOTE: W8A8 file loads stable under ORT_ENABLE_ALL (verified) -> no optimizer override needed
+input_path: "/home/bht/BHT/AI/Input_Test/images/crnn_reading.jpg"
+weight_path: "/home/bht/BHT/AI/Weights/crnn_handwriting/CRNN_HTR&HCR_INT8_dynamic_W8A8.onnx"
+output_path: "/home/bht/Downloads/xaip-test/crnn/w8a8/"
+
+# precision_format "int8" = code key for INT8-quantized weights (W8A8 dynamic: weight INT8, FP32 IO)
+model_name: "crnn"
+precision_format: "int8"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

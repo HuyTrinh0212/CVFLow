@@ -12,6 +12,14 @@ model_name: "crnn"
 precision_format: "fp32"  # Options: fp32 | fp16 | int8 | bf16
 # NOTE: no dataset key - crnn.yaml has no dataset default (htr task).
 
+# Precision notes (verified with real weights):
+#   fp32 -> *_FP32.onnx | int8 -> *_Mixed_FP32_INT8.onnx (Mixed FP32-INT8) | bf16 -> *_BF16_with_cast.onnx
+#   FP16 weight has FP16 input -> input auto-cast to fp16
+#   int8/bf16 weights have FP32 input  -> input stays fp32
+#   graph_optimization_level below is REQUIRED for fp16: this LSTM export segfaults under the
+#   default "all" level; EXTENDED is stable and harmless for the other precisions (verified).
+graph_optimization_level: "extended"  # Options: disable | basic | extended | all (default "all")
+
 # Target device configuration
 target:
   device: "cpu"  # Options: cpu | gpu

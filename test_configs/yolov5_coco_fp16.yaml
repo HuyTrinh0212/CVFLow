@@ -1,0 +1,18 @@
+# Test config - YOLOv5 COCO-2017 | FP16 | inference (single image)
+input_path: "/home/bht/BHT/AI/Input_Test/images/yolov5_coco2017_persons.png"
+weight_path: "/home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_FP16.onnx"
+output_path: "/home/bht/Downloads/xaip-test/yolov5_coco/fp16/"
+
+model_name: "yolov5"
+precision_format: "fp16"
+dataset: "coco"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

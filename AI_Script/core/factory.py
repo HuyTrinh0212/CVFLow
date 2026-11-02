@@ -20,7 +20,8 @@ class factory_pipeline:
                  tracking_option=False,
                  display=False,
                  target_device="cpu",
-                 dataset=None):
+                 dataset=None,
+                 extras=None):
         # Validate output_path - required, no default
         if output_path is None or not str(output_path).strip():
             raise ValueError("'output_path' is required (no default). Please provide output_path via config.yaml.")
@@ -62,6 +63,9 @@ class factory_pipeline:
             self.config['target_device'] = str(self.target_device)
         if dataset:
             self.config['dataset'] = str(dataset)
+        # Forward optional config keys (e.g. input_dtype, graph_optimization_level, conf_threshold ...)
+        if extras:
+            self.config.update(extras)
         # Re-ensure output_path and display remain after overwrites
         self.config["output_path"] = self.output_path
         self.config["display"] = self.display

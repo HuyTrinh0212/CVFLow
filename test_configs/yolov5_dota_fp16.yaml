@@ -1,0 +1,20 @@
+# Test config - YOLOv5 DOTA Satellite (16-class, old order) | FP16 | inference (single image)
+input_path: "/home/bht/BHT/AI/Input_Test/images/yolov5_dota_aircraft.jpg"
+weight_path: "/home/bht/BHT/AI/Weights/yolov5_dota_satellite/Yolov5s_DOTA_Satellite_FP16.onnx"
+output_path: "/home/bht/Downloads/xaip-test/yolov5_dota/fp16/"
+
+model_name: "yolov5"
+precision_format: "fp16"
+# DOTA FP16 export keeps FP32 IO (verified: tensor(float) input) -> skip fp16 cast
+input_dtype: "fp32"
+dataset: "dota_satellite"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

@@ -1,9 +1,21 @@
+# Project files
+AGENTS.md
+
+# Models / weight files
+*.onnx
+*.onnx.data
+*.pt
+*.pth
+*.engine
+*.trt
+
 # Images
 *.png
 *.jpg
 *.jpeg
 *.gif
 *.bmp
+*.tif
 *.tiff
 *.webp
 *.svg

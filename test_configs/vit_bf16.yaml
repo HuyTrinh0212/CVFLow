@@ -1,0 +1,19 @@
+# Test config - ViT (ImageNet, 1000 classes) | BF16 (with_cast, FP32 IO) | inference (single image)
+# bf16 label -> manual preprocess path (same as fp32/fp16, torchvision-style only triggers on "int8")
+input_path: "/home/bht/BHT/AI/Input_Test/images/cat.jpg"
+weight_path: "/home/bht/BHT/AI/Weights/vit_imagenet/Vision_Transformer_ViT_BF16_with_cast.onnx"
+output_path: "/home/bht/Downloads/xaip-test/vit/bf16/"
+
+model_name: "vit"
+precision_format: "bf16"
+dataset: "imagenet"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

@@ -16,7 +16,19 @@ class BaseModel(ABC):
     def _session_option(self):
         sess_options = ort.SessionOptions()
         sess_options.enable_profiling = True
-        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        # Graph optimization level is configurable: some models (e.g. fp16 CRNN LSTM export) segfault
+        # under ORT_ENABLE_ALL but run fine at ORT_ENABLE_EXTENDED.
+        # config key: graph_optimization_level ("disable" | "basic" | "extended" | "all", default "all")
+        opt_levels = {
+            "disable": ort.GraphOptimizationLevel.ORT_DISABLE_ALL,
+            "basic": ort.GraphOptimizationLevel.ORT_ENABLE_BASIC,
+            "extended": ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED,
+            "all": ort.GraphOptimizationLevel.ORT_ENABLE_ALL,
+        }
+        opt_level = str(self.config.get("graph_optimization_level", "all")).lower()
+        if opt_level not in opt_levels:
+            raise ValueError(f"Unknown graph_optimization_level '{opt_level}'. Options: {list(opt_levels)}")
+        sess_options.graph_optimization_level = opt_levels[opt_level]
         output_path = self.config.get("output_path")
         if not output_path or not str(output_path).strip():
             raise ValueError("'output_path' is required in config (no default).")
@@ -28,35 +40,21 @@ class BaseModel(ABC):
     def load_model(self):
         device = self.config.get("target_device", "cpu").lower()
         providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if device == "gpu" else ["CPUExecutionProvider"]
-        
+        # Always pass session options (incl. configurable graph_optimization_level). Some fp16 exports
+        # (e.g. CRNN LSTM) segfault under ORT_ENABLE_ALL -> config key graph_optimization_level.
+        sess = lambda path: ort.InferenceSession(path, self.onnx_sess_options, providers=providers)
         if self.config.get("weight_path"):
-            weight_path = str(self.config.get("weight_path"))
-            if self.debug_mode:
-                return ort.InferenceSession(weight_path, self.onnx_sess_options, providers=providers)
-            return ort.InferenceSession(weight_path, providers=providers)
+            return sess(str(self.config.get("weight_path")))
+        elif self.precision_format == 'fp32':
+            return sess(str(self.config.get("weight_path_fp32")))
+        elif self.precision_format == 'fp16':
+            return sess(str(self.config.get("weight_path_fp16")))
+        elif self.precision_format == 'int8':
+            return sess(str(self.config.get("weight_path_int8")))
+        elif self.precision_format == 'bf16':
+            return sess(str(self.config.get("weight_path_bf16")))
         else:
-            if self.precision_format == 'fp32':
-                weight_path_fp32 = str(self.config.get("weight_path_fp32"))
-                if self.debug_mode:
-                    return ort.InferenceSession(weight_path_fp32, self.onnx_sess_options, providers=providers)
-                return ort.InferenceSession(weight_path_fp32, providers=providers)
-            elif self.precision_format == 'fp16':
-                weight_path_fp16 = str(self.config.get("weight_path_fp16"))
-                if self.debug_mode:
-                    return ort.InferenceSession(weight_path_fp16, self.onnx_sess_options, providers=providers)
-                return ort.InferenceSession(weight_path_fp16, providers=providers)
-            elif self.precision_format == 'int8':
-                weight_path_int8 = str(self.config.get("weight_path_int8"))
-                if self.debug_mode:
-                    return ort.InferenceSession(weight_path_int8, self.onnx_sess_options, providers=providers)
-                return ort.InferenceSession(weight_path_int8, providers=providers)
-            elif self.precision_format == 'bf16':
-                weight_path_bf16 = str(self.config.get("weight_path_bf16"))
-                if self.debug_mode:
-                    return ort.InferenceSession(weight_path_bf16, self.onnx_sess_options, providers=providers)
-                return ort.InferenceSession(weight_path_bf16, providers=providers)
-            else:
-                raise FileNotFoundError(f"No support precision format: {self.precision_format}")
+            raise FileNotFoundError(f"No support precision format: {self.precision_format}")
 
     @abstractmethod
     def predict(self, image: np.ndarray):
