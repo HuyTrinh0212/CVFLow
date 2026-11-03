@@ -1178,5 +1178,21 @@
     "12": "roundabout",
     "13": "soccer ball field",
     "14": "swimming pool"
+  },
+  "yolo_helmet": {
+    "0": "head",
+    "1": "helmet"
+  },
+  "yolo_seatbelt": {
+    "0": "Cellphone_calling",
+    "1": "Cellphone_texting",
+    "2": "Person_with_seatbelt",
+    "3": "Person_without_seatbelt"
+  },
+  "yolo_smoke": {
+    "0": "smoke"
+  },
+  "yolo_lpr": {
+    "0": "license_plate"
   }
 }

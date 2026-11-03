@@ -1,0 +1,18 @@
+# Test config - YOLOv5 Seatbelt Detection | FP16 | inference (single image)
+input_path: "/home/bht/BHT/AI/Input_Test/images/seatbelt-yolo.png"
+weight_path: "/home/bht/BHT/AI/Weights/YOLO_SeatbeltDetection/Yolov5_Seatbelt_FP16.onnx"
+output_path: "/home/bht/Downloads/xaip-test/yolov5_seatbelt/fp16/"
+
+model_name: "yolov5"
+precision_format: "fp16"
+dataset: "yolo_seatbelt"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

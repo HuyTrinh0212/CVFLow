@@ -1,0 +1,17 @@
+# YOLOv5 COCO FP32 - inference on video input
+input_path: "/home/bht/BHT/AI/Input_Test/videos/traffic.mp4"
+weight_path: "/home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_FP32.onnx"
+output_path: "/home/bht/Downloads/xaip-test/yolov5-coco-video"
+model_name: "yolov5"
+precision_format: "fp32"
+dataset: "coco"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

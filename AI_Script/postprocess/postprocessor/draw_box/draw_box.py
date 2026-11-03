@@ -102,8 +102,9 @@ class DrawBox(BasePostprocessor):
             scores = scores[keep]
             class_ids = class_ids[keep]
 
-        # unletterbox
-        boxes = unletterbox(boxes_xyxy=boxes, original_shape=(h, w), target_size=self.target_size)
+        # unletterbox (resize_mode: "letterbox" mặc định, "stretch" cho model train-stretch)
+        boxes = unletterbox(boxes_xyxy=boxes, original_shape=(h, w), target_size=self.target_size,
+                            resize_mode=str(self.config.get("resize_mode", "letterbox")).lower())
 
         # Draw
         cv_font = cv2.FONT_HERSHEY_SIMPLEX

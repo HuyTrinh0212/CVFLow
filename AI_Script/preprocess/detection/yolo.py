@@ -15,6 +15,12 @@ class YOLOPreprocessor(BasePreprocessor):
         self.std = np.array(self.config.get("std", [1.0, 1.0, 1.0]), dtype=np.float32)
         # color padding
         self.auto_pad_color = (114, 114, 114)
+        # Resize mode: "letterbox" (default, preserves aspect ratio with 114 pad)
+        # or "stretch" (direct anisotropic resize to target_size - some custom
+        # YOLO exports are trained on stretched square input, e.g. Yolov5s_Smoke)
+        self.resize_mode = str(self.config.get("resize_mode", "letterbox")).lower()
+        if self.resize_mode not in ("letterbox", "stretch"):
+            raise ValueError(f"Unknown resize_mode '{self.resize_mode}'. Options: ['letterbox', 'stretch']")
 
     def letterbox(self, img: np.ndarray):
         shape = img.shape[:2]  # (h, w)
@@ -52,7 +58,12 @@ class YOLOPreprocessor(BasePreprocessor):
             print("==ERROR: Input format is invalid==")
 
         # Resize
-        processed, ratio, (dw, dh) = self.letterbox(processed)
+        if self.resize_mode == "stretch":
+            # Direct resize to target_size (no aspect ratio preservation, no padding)
+            processed = cv2.resize(processed, (self.target_size[1], self.target_size[0]))
+            ratio, dw, dh = 1.0, 0.0, 0.0
+        else:
+            processed, ratio, (dw, dh) = self.letterbox(processed)
         # BGR -> RGB
         processed = cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
         # Normalize to [0,1]

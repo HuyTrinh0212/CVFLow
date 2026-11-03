@@ -1,0 +1,21 @@
+# Test config - YOLOv5 Smoke Detection | Mixed FP32-INT8 (static QDQ) | inference (single image)
+# Note: model này train với square-stretch input (conf 0.43) - letterbox làm model mất detection (conf 0.017)
+# precision_format "int8" = code key for INT8-quantized weights; this file selected purely via weight_path
+input_path: "/home/bht/BHT/AI/Input_Test/images/smoking-YOLO.jpg"
+weight_path: "/home/bht/BHT/AI/Weights/YOLO_SmokeDetection/Yolov5s_Smoke_Mixed_FP32_INT8.onnx"
+output_path: "/home/bht/Downloads/xaip-test/yolov5_smoke/mixed/"
+
+model_name: "yolov5"
+precision_format: "int8"
+dataset: "yolo_smoke"
+resize_mode: "stretch"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

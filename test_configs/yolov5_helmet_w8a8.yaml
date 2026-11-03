@@ -1,0 +1,19 @@
+# Test config - YOLOv5 Helmet Detection | W8A8 (INT8 dynamic quant, FP32 IO) | inference (single image)
+# precision_format "int8" = code key for INT8-quantized weights (W8A8 dynamic: weight INT8, FP32 IO)
+input_path: "/home/bht/BHT/AI/Input_Test/images/helmet-yolo.png"
+weight_path: "/home/bht/BHT/AI/Weights/YOLO_HelmetDetection/Yolov5s_Helmet_INT8_dynamic.onnx"
+output_path: "/home/bht/Downloads/xaip-test/yolov5_helmet/w8a8/"
+
+model_name: "yolov5"
+precision_format: "int8"
+dataset: "yolo_helmet"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false

@@ -17,7 +17,7 @@ def NMS(boxes, scores, iou_threshold=0.3):
     keep = nms(boxes, scores, iou_threshold)
     return keep.numpy()
 
-def unletterbox(boxes_xyxy, original_shape, target_size):
+def unletterbox(boxes_xyxy, original_shape, target_size, resize_mode="letterbox"):
     boxes = np.asarray(boxes_xyxy, dtype=np.float32)
     if boxes.size == 0:
         return np.zeros((0, 4), dtype=np.int32)
@@ -36,29 +36,37 @@ def unletterbox(boxes_xyxy, original_shape, target_size):
         boxes[:, [0, 2]] = boxes[:, [0, 2]] * tgt_w
         boxes[:, [1, 3]] = boxes[:, [1, 3]] * tgt_h
 
-    # tỉ lệ scale theo YOLO
-    r = min(tgt_h / orig_h, tgt_w / orig_w)
-
-    # new_unpad = round(orig * r)  (lưu ý rounding trước)
-    new_unpad_w = int(round(orig_w * r))
-    new_unpad_h = int(round(orig_h * r))
-
-    # tổng padding (pixel)
-    pad_w = tgt_w - new_unpad_w
-    pad_h = tgt_h - new_unpad_h
-
-    # padding nửa (float), Ultralytics tính left/top bằng round(dw - 0.1)
-    pad_w_half = pad_w / 2.0
-    pad_h_half = pad_h / 2.0
-    left = int(round(pad_w_half - 0.1))
-    top = int(round(pad_h_half - 0.1))
-
-    # gỡ padding
     boxes_out = boxes.copy().astype(np.float64)
-    boxes_out[:, [0, 2]] -= left
-    boxes_out[:, [1, 3]] -= top
-    boxes_out[:, [0, 2]] /= r
-    boxes_out[:, [1, 3]] /= r
+
+    if resize_mode == "stretch":
+        # Direct anisotropic resize: inverse-scale each axis independently
+        rx = orig_w / tgt_w
+        ry = orig_h / tgt_h
+        boxes_out[:, [0, 2]] *= rx
+        boxes_out[:, [1, 3]] *= ry
+    else:
+        # tỉ lệ scale theo YOLO
+        r = min(tgt_h / orig_h, tgt_w / orig_w)
+
+        # new_unpad = round(orig * r)  (lưu ý rounding trước)
+        new_unpad_w = int(round(orig_w * r))
+        new_unpad_h = int(round(orig_h * r))
+
+        # tổng padding (pixel)
+        pad_w = tgt_w - new_unpad_w
+        pad_h = tgt_h - new_unpad_h
+
+        # padding nửa (float), Ultralytics tính left/top bằng round(dw - 0.1)
+        pad_w_half = pad_w / 2.0
+        pad_h_half = pad_h / 2.0
+        left = int(round(pad_w_half - 0.1))
+        top = int(round(pad_h_half - 0.1))
+
+        # gỡ padding
+        boxes_out[:, [0, 2]] -= left
+        boxes_out[:, [1, 3]] -= top
+        boxes_out[:, [0, 2]] /= r
+        boxes_out[:, [1, 3]] /= r
 
     # clip
     boxes_out[:, [0, 2]] = boxes_out[:, [0, 2]].clip(0, orig_w - 1)

@@ -77,7 +77,18 @@ xaip/
 | `vit` | classification | `imagenet` (1000 labels) |
 | `crnn` | htr | (none - no `dataset` key) |
 
-> **Note**: `resnet` is a code alias only; configs use `resnet50`. Label sets live in `AI_Script/configs/datasets.json` (`coco 80, dota_satellite 16, dota 15, number_character 47, eurosat 10, imagenet 1000`).
+> **Note**: `resnet` is a code alias only; configs use `resnet50`. Label sets live in `AI_Script/configs/datasets.json` (`coco 80, dota_satellite 16, dota 15, number_character 47, eurosat 10, imagenet 1000, yolo_lpr 1, yolo_helmet 2, yolo_seatbelt 4, yolo_smoke 1`).
+
+### Fine-tuned YOLOv5 variants (custom weights, same `model_name: "yolov5"`)
+
+| Weights subfolder (`/home/bht/BHT/AI/Weights/`) | `dataset` | Labels | Test image (`Input_Test/images/`) |
+|---|---|---|---|
+| `YOLO_LPR` (`yolov5s_LPR_*`) | `yolo_lpr` | `license_plate` | `LPR-yolo.png` |
+| `YOLO_HelmetDetection` (`Yolov5s_Helmet_*`) | `yolo_helmet` | `head`, `helmet` | `helmet-yolo.png` |
+| `YOLO_SeatbeltDetection` (`Yolov5_Seatbelt_*`) | `yolo_seatbelt` | seatbelt yes/no, cellphone calling/texting | `seatbelt-yolo.png`, `seatbelt-2-yolo.png` |
+| `YOLO_SmokeDetection` (`Yolov5s_Smoke_*`) | `yolo_smoke` | `smoke` | `smoking-YOLO.jpg` |
+
+> The smoke model is trained on square-stretch input → `resize_mode: "stretch"` is **required** (default letterbox collapses its detections). Full 5-precision matrices for all 4 variants live in `test_configs/yolov5_{lpr,helmet,seatbelt,smoke}_<label>.yaml`.
 
 ---
 
@@ -90,12 +101,13 @@ xaip/
 | `fp32` | `*_FP32.onnx` | fp32 | — |
 | `fp16` | `*_FP16.onnx` | fp16 (auto-cast) | — except the 2 files below |
 | `int8` | `*_Mixed_FP32_INT8.onnx` (static quant) or `*_INT8_dynamic_W8A8.onnx` (dynamic quant) | fp32 | — |
-| `bf16` | `*_BF16_with_cast.onnx` (cast inside graph) | fp32 | — |
+| `bf16` | `*_BF16_with_cast.onnx` (cast inside graph) or plain `*_BF16.onnx` (fine-tuned YOLOv5) | fp32 | — |
 
-All 7 model variants × 5 labels are verified to run on CPU (35/35 configs in `test_configs/`). Two per-file quirks, already set in the templates:
+All 11 variants × 5 labels are verified to run on CPU (55/55 configs in `test_configs/`). Per-file quirks, already set in the templates/configs:
 
 - **YOLOv5 DOTA** FP16 weight keeps FP32 IO → `input_dtype: "fp32"` (default in `config_templates/yolov5_dota.yaml`)
 - **CRNN** FP16 weight needs `graph_optimization_level: "extended"` (default in `config_templates/crnn.yaml`)
+- **Smoke** model needs `resize_mode: "stretch"` (default in each `test_configs/yolov5_smoke_*.yaml`)
 
 ---
 
@@ -151,6 +163,9 @@ All 7 model variants × 5 labels are verified to run on CPU (35/35 configs in `t
 | `precision_format` | Precision label: `fp32` \| `fp16` \| `int8` (Mixed/W8A8) \| `bf16` — see Precision Formats | Required |
 | `input_dtype` | Force model input tensor dtype (`fp32` \| `fp16`); default derived from precision label | Auto |
 | `graph_optimization_level` | ORT graph optimization: `disable` \| `basic` \| `extended` \| `all` | `all` |
+| `conf_threshold` | Detection confidence mask (keeps boxes with `conf > threshold`) | `0.3` |
+| `iou_threshold` | NMS IoU threshold (detection) | `0.5` |
+| `resize_mode` | YOLO preprocess: `letterbox` \| `stretch` (`stretch` required for the smoke model) | `letterbox` |
 | `debug_dump_initializers` | Debug mode only: also dump weight/bias initializers as JSON layers | `false` |
 | `dataset` | Label set override (optional; defaults per model, see Models) | Per-model default |
 | `target.device` | Inference device | `cpu` (`cpu` \| `gpu`) |

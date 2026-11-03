@@ -1,0 +1,17 @@
+# RT-DETR COCO FP32 - inference on video input
+input_path: "/home/bht/BHT/AI/Input_Test/videos/cars.mp4"
+weight_path: "/home/bht/BHT/AI/Weights/rt-detr_coco2017/Detection_Transformer_RT-DeTr-l_FP32.onnx"
+output_path: "/home/bht/Downloads/xaip-test/detr-coco-video"
+model_name: "detr"
+precision_format: "fp32"
+dataset: "coco"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false
