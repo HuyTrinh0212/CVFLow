@@ -163,6 +163,7 @@ All 11 variants × 5 labels are verified to run on CPU (55/55 configs in `test_c
 | `precision_format` | Precision label: `fp32` \| `fp16` \| `int8` (Mixed/W8A8) \| `bf16` — see Precision Formats | Required |
 | `input_dtype` | Force model input tensor dtype (`fp32` \| `fp16`); default derived from precision label | Auto |
 | `graph_optimization_level` | ORT graph optimization: `disable` \| `basic` \| `extended` \| `all` | `all` |
+| `inference_workers` | Tracking video only: parallel inference threads (preprocess/session.run/adapter). `1` = serial (default, original behavior); frame order + ByteTrack state preserved | `1` |
 | `conf_threshold` | Detection confidence mask (keeps boxes with `conf > threshold`) | `0.3` |
 | `iou_threshold` | NMS IoU threshold (detection) | `0.5` |
 | `resize_mode` | YOLO preprocess: `letterbox` \| `stretch` (`stretch` required for the smoke model) | `letterbox` |
