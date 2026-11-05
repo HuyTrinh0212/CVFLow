@@ -3,7 +3,7 @@
 # NOTE: schema only - replace /path/to/... with real paths.
 
 # Input/Output paths
-input_path: "/path/to/input"   # single image (.png/.jpg) | video (.mp4/.avi/.mov/.mkv) | folder (evaluate: must contain images/ + labels/)
+input_path: "/path/to/input"   # single image (.png/.jpg/.jpeg) | video (.mp4/.avi/.mov/.mkv) | folder (evaluate: must contain images/ + labels/)
 weight_path: "/path/to/model.onnx"  # overrides internal weight; precision_format still required as label
 output_path: "/path/to/output"  # Required - no default, all outputs saved here
 
@@ -13,7 +13,7 @@ precision_format: "fp32"  # Options: fp32 | fp16 | int8 | bf16
 dataset: "coco"  # See AI_Script/configs/datasets.json (80 labels)
 
 # Precision notes (verified with real weights):
-#   fp32 -> *_FP32.onnx | int8 -> *_Mixed_FP32_INT8.onnx (Mixed FP32-INT8) | bf16 -> *_BF16_with_cast.onnx
+#   fp32 -> *_FP32.onnx | int8 -> *_Mixed_FP32_INT8.onnx (static QDQ) or *_INT8_dynamic_W8A8.onnx (dynamic) | bf16 -> *_BF16_with_cast.onnx
 #   FP16 weight has FP16 input -> input auto-cast to fp16 (no extra key needed)
 #   int8/bf16 weights have FP32 input  -> input stays fp32   (no extra key needed)
 
