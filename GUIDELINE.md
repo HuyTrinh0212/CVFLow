@@ -31,7 +31,7 @@ pip install onnxruntime-gpu torch torchvision --index-url https://download.pytor
 
 ## 2. Configuration
 
-Each run = one YAML file, at any location, passed to `main.py`. Ready-made configs: schema-only templates per model in `config_templates/<model_name>.yaml` (pure `/path/to/...` placeholders — fill in your paths). The example configs in `test_configs/` / `eval_configs/` / `debug_configs/` (incl. 55 verified inference runs in `test_configs/`) contain **absolute paths from the machine they were built on** — edit `input_path`, `weight_path`, `output_path` before reuse.
+Each run = one YAML file, at any location, passed to `main.py`. Ready-made configs: schema-only templates per model in `config_templates/<model_name>.yaml` (pure `/path/to/...` placeholders — fill in your paths). The example configs in `test_configs/` / `eval_configs/` / `debug_configs/` (fine-tuned YOLOv5 run configs in `test_configs/` — quick reference below) contain **absolute paths from the machine they were built on** — edit `input_path`, `weight_path`, `output_path` before reuse.
 
 ### Required parameters
 
@@ -51,7 +51,7 @@ Rules:
 - If several main modes are `true`, precedence is `inference_mode` → `debug_mode` → `evaluate_mode`.
 - Weight selection is **by file name**: `*_FP32.onnx` · `*_FP16.onnx` · `*_Mixed_FP32_INT8.onnx` / `*_INT8_dynamic_W8A8.onnx` · `*_BF16_with_cast.onnx`. Weights may live anywhere.
 - Unset `weight_path` silently falls back to the internal `weight_path_<precision>` defaults, which point to the original machine's directories (`AI_Script/configs/*.yaml`) — likely missing on your disk. Treat `weight_path` as always set.
-- Keys not in the tables above are forwarded verbatim into the pipeline → they can override model-internal values (`mean`, `std`, `target_size`, `transpose_output`, `weight_path_*`, `default_postprocess`, `task`).
+- Keys not in the tables above are forwarded verbatim into the pipeline → they can override model-internal values (`mean`, `std`, `target_size`, `transpose_output`, `weight_path_*`, `default_postprocess`, `task`). Caveat: `mean`/`std` are **inert for YOLO detection preprocessing** — the applied pipeline is RGB `[0,1]` (÷255) and the mean/std math is commented out in `AI_Script/preprocess/detection/yolo.py`; keep them at `[0,0,0]`/`[1,1,1]` (non-default mean/std or 0–255 scale inputs collapse fine-tuned models, mAP → 0).
 
 ### Optional parameters
 
@@ -154,7 +154,17 @@ Known precision quirks (3 exceptions; full background incl. BF16/INT8 export det
 
 - YOLOv5 DOTA FP16 keeps FP32 IO → `input_dtype: "fp32"`
 - CRNN FP16 (LSTM export) segfaults under full optimization → `graph_optimization_level: "extended"`
-- YOLOv5 Smoke trained on square-stretch input → `resize_mode: "stretch"`
+- YOLOv5 fine-tuned Smoke & Seatbelt → `resize_mode: "stretch"` (validated); Helmet keeps `letterbox` — measured per model, rationale documented in each config's header
+
+Fine-tuned YOLOv5 quick reference — ready-to-run in `test_configs/`, preprocess validated per model (single-image sweep: letterbox vs stretch vs normalization variants; artifacts + method → `~/Downloads/xaip_preprocess_experiments/`):
+
+| Config | `dataset` | `resize_mode` | Weights (original machine) |
+|--------|-----------|---------------|-----------------------------|
+| `test_configs/yolov5_helmet_fp32.yaml` | `yolo_helmet` | `letterbox` | `YOLO_HelmetDetection/` |
+| `test_configs/yolov5_seatbelt_fp32.yaml` | `yolo_seatbelt` | `stretch` | `YOLO_SeatbeltDetection/` |
+| `test_configs/yolov5_smoke_fp32.yaml` | `yolo_smoke` | `stretch` | `YOLO_SmokeDetection/` |
+
+Each config declares all four `weight_path_<precision>` entries → switching precision = edit `precision_format` only. These ONNX exports accept 640×640 only.
 
 ## 3. Execution
 

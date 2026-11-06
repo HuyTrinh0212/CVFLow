@@ -31,6 +31,8 @@ Label sets live in `AI_Script/configs/datasets.json`. Run configs and sample dat
 
 **Precision comparison:** `fp32` / `fp16` / `int8` (static QDQ or dynamic W8A8) / `bf16` — the weight is selected per file name via `weight_path`. Python API (`factory_pipeline`) additionally exposes `benchmark_dashboard()` (chart comparison of two eval JSONs) and `compare_intermediate()` (layer-wise MSE between precisions).
 
+**Fine-tuned YOLOv5 (Helmet / Seatbelt / Smoke):** ready-to-run configs in `test_configs/` with per-model validated preprocess — Helmet: `letterbox`; Seatbelt & Smoke: `stretch` (validated sweep, 2026-11). Preprocess is RGB `[0,1]` (÷255); `mean`/`std` config keys are accepted but inert for YOLO — keep defaults. The fine-tuned ONNX exports accept fixed 640×640 input.
+
 ## Project Structure
 
 ```

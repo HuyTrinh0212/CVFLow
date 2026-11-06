@@ -72,7 +72,7 @@ Run any pipeline: `python main.py <config.yaml>` (env setup, full parameters, pe
 - Base contracts: `BaseModel(config, debug_mode)` → `load_model()` selects weight by `precision_format`/`weight_path` → `__call__(np.ndarray) → List[np.ndarray]`; `BasePreprocess.__call__(image*) → np.ndarray`; `BasePostprocess.__call__(model_output, raw_input=None, save=True)`; `BaseEvaluate.benchmark_single(pred, img_path, label_path)` + `benchmark_toltal(dict)`.
 - Error handling: `output_path` validated in `main.py`, `factory_pipeline.__init__`, `BaseModel._session_option`, every pipeline `__init__` — fail-fast, descriptive exceptions, no silent weight fallbacks.
 - Config flow: `AI_Script/configs/<model>.yaml` is the single source of truth; `output_path`/`display` injected, then CLI overwrites; unknown YAML keys forwarded via `extras` (this is how `input_dtype`, `graph_optimization_level`, `resize_mode` reach the preprocessor/model).
-- Tensor/image conventions: **BGR** · **NCHW** `[1,C,H,W]` · per-model `mean`/`std` in internal config · detection boxes **xyxy** after adapter + unletterbox.
+- Tensor/image conventions: **BGR** · **NCHW** `[1,C,H,W]` · per-model `mean`/`std` in internal config (**inert for YOLO detection** — RGB `[0,1]` ÷255 only, mean/std math commented out in `preprocess/detection/yolo.py`) · detection boxes **xyxy** after adapter + unletterbox.
 
 ## Hardware Constraints (verified)
 
@@ -80,13 +80,13 @@ Run any pipeline: `python main.py <config.yaml>` (env setup, full parameters, pe
 - FP16: most exports FP16 IO (auto-cast); exception `Yolov5s_DOTA_Satellite_FP16.onnx` keeps FP32 IO → `input_dtype: "fp32"`.
 - BF16: `*_BF16_with_cast.onnx` has FP32 IO (cast in graph) — no override; the 4 fine-tuned YOLOv5 export plain `*_BF16.onnx` **also FP32 IO** — no override.
 - INT8 (`precision_format: "int8"`, picked by file name): `*_Mixed_FP32_INT8.onnx` (static QDQ) vs `*_INT8_dynamic_W8A8.onnx` (dynamic W8A8); fine-tuned YOLOv5 dynamic file is `*_INT8_dynamic.onnx` (same behavior).
-- YOLOv5s_Smoke: trained on square-stretch input → **requires** `resize_mode: "stretch"` (else detections collapse).
+- Fine-tuned YOLOv5 exports have fixed 640×640 ONNX input → `target_size` must be `[640, 640]` (other sizes fail at session level). Preprocess validated per model (2026-11 sweep, single-image hand-GT): Smoke (square-stretch-trained) & Seatbelt → **stretch** (Seatbelt: detects 3/3 objects vs 1/3 with letterbox); Helmet → **letterbox** (better post-NMS mAP@[.5:.95] 0.299 vs 0.202; detect-strength of the dark driver helmet much better under stretch — retest with more labelled images before switching). `mean`/`std` stay no-ops; ImageNet mean/std or 0–255 scale inputs collapse the models (mAP → 0).
 - ORT session: profiling always on → `Output profiler - <model> ....json` in `output_path`; `graph_optimization_level` default `all`, CRNN FP16 needs `"extended"` (segfault under `all`).
 
 ## Testing & QA
 
 - **No test suite** (no pytest/unittest/tests/). QA = evaluation JSONs + benchmark charts + layer-wise MSE + `AI_Script/Functions/` scripts.
-- Verified: 55 inference runs on CPU (11 variants × fp32/fp16/mixed/bf16/w8a8); fine-tuned YOLOv5 configs in `test_configs/yolov5_{lpr,helmet,seatbelt,smoke}_<label>.yaml`.
+- Verified: 55 inference runs on CPU (11 variants × fp32/fp16/mixed/bf16/w8a8 — original machine); fine-tuned YOLOv5 configs in `test_configs/yolov5_{helmet,seatbelt,smoke}_fp32.yaml` (preprocess-validated 2026-11; LPR config no longer present; old per-precision test_configs removed in commit `324f7ec`).
 - Evaluate label formats: det `class_id xc yc w h` (normalized) · cls single integer · HTR plain text.
 
 ### Known Gaps (agent awareness)
@@ -95,5 +95,6 @@ Run any pipeline: `python main.py <config.yaml>` (env setup, full parameters, pe
 2. HTR `benchmark_toltal` aggregates exact-match accuracy only; `_cer`/`_wer` helpers exist but are not aggregated.
 3. `Draw_chart.py` has hard-coded paths.
 4. Internal weight defaults point to the original machine — `weight_path` must always be set by the user.
+5. Detection evaluate `_adapter_boxes` calls `unletterbox` **without** `resize_mode` → `evaluate_mode` reverse-maps stretch runs with letterbox math (`draw_box` passes `resize_mode` correctly, so inference/tracking visuals are fine). Single-image preprocess sweeps must wrap the eval math themselves (artifacts: `~/Downloads/xaip_preprocess_experiments/`).
 
 Minimal configs by mode + output JSON schemas → GUIDELINE.md § 2 & § 4.
