@@ -18,3 +18,10 @@ dependencies:
       - pandas==3.0.5
       - torch==2.13.0
       - torchvision==0.28.0
+      # ByteTrack is imported unconditionally by AI_Script/core/factory.py
+      # (even for inference-only runs) -> lap + cython_bbox are required,
+      # even though neither pipeline tracking nor models interact at
+      # runtime. Pinned to the versions verified installed in the
+      # current 'xaip' env.
+      - lap==0.5.14
+      - cython_bbox==0.1.5
