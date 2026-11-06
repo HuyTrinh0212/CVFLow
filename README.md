@@ -41,7 +41,7 @@ xaip/
 ├── GUIDELINE.md               # Setup, config, running
 ├── config.yaml                # Example pipeline configuration
 ├── config_templates/          # Schema-only templates per model (/path/to/...)
-├── debug_configs/ eval_configs/ test_configs/   # Ready-to-run configs
+├── debug_configs/ eval_configs/ test_configs/   # Ready-to-run example configs (absolute paths inside — edit before reuse)
 └── AI_Script/                 # Core pipeline
     ├── core/                  # Pipelines (inference, tracking, debug, evaluate, benchmark)
     ├── configs/               # Internal model configs + datasets.json (label sets)

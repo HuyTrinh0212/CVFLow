@@ -1,0 +1,18 @@
+# Test config - YOLOv5 Helmet Detection | FP32 | inference (video)
+input_path: "/home/bht/Downloads/12s/helmet.mp4"
+weight_path: "/home/bht/BHT/AI/Weights/YOLO_HelmetDetection/Yolov5s_Helmet_FP32.onnx"
+output_path: "/home/bht/Downloads/"
+
+model_name: "yolov5"
+precision_format: "fp32"
+dataset: "yolo_helmet"
+
+target:
+  device: "cpu"
+
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+
+tracking_option: false
+display: false
