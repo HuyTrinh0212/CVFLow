@@ -14,8 +14,8 @@
 # =========================================================================
 
 # Input / output
-input_path: "/home/bht/BHT/AI/Input_Test/images/smoke-1-yolo.png"
-output_path: "/home/bht/Downloads/xaip_outputs/smoke"
+input_path: "/home/bht/Downloads/12s/smoke.mp4"
+output_path: "/home/bht/Downloads/xaip_yolov5_fp32/smoke"
 
 # Model selection
 model_name: "yolov5"
