@@ -1,6 +1,3 @@
-# Project files
-AGENTS.md
-
 # Models / weight files
 *.onnx
 *.onnx.data
