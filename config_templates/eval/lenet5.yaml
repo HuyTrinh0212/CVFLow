@@ -1,0 +1,20 @@
+# Evaluate: LeNet-5 (classification, dataset=number_character, 47 labels)
+# Dataset: 10 EMNIST-47 images (sample) - folder must contain images/ + labels/
+# Usage: python main.py config_templates/eval/lenet5.yaml
+input_path: "/path/to/dataset"   # folder with images/ + labels/
+weight_path: "/path/to/LeNet5_Numbers&Characters_FP32.onnx"
+output_path: "/path/to/output"
+
+model_name: "lenet5"
+precision_format: "fp32"
+dataset: "number_character"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: false
+evaluate_mode: true
+
+tracking_option: false
+display: false

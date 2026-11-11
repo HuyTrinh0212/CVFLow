@@ -1,0 +1,19 @@
+# Debug: crnn (fp32) - single image input
+# Usage: python main.py config_templates/debug/crnn.yaml
+input_path: "/path/to/image"   # single image only
+weight_path: "/path/to/CRNN_HTR&HCR_FP32.onnx"
+output_path: "/path/to/output"
+
+model_name: "crnn"
+precision_format: "fp32"
+# no dataset key - htr task
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: true
+evaluate_mode: false
+
+tracking_option: false
+display: false

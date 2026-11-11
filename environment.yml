@@ -1,0 +1,27 @@
+name: xaip
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      # Pinned to the currently working xaip env (CPU). For GPU inference:
+      #   pip install onnxruntime-gpu torch torchvision --index-url https://download.pytorch.org/whl/cu118
+      - onnx==1.22.0
+      - onnxruntime==1.29.0
+      - opencv-python==5.0.0.93
+      - numpy==2.5.2
+      - PyYAML==6.0.3
+      - Pillow==12.3.0
+      - scikit-learn==1.9.0
+      - matplotlib==3.11.1
+      - pandas==3.0.5
+      - torch==2.13.0
+      - torchvision==0.28.0
+      # ByteTrack is imported unconditionally by AI_Script/core/factory.py
+      # (even for inference-only runs) -> lap + cython_bbox are required,
+      # even though neither pipeline tracking nor models interact at
+      # runtime. Pinned to the versions verified installed in the
+      # current 'xaip' env.
+      - lap==0.5.14
+      - cython_bbox==0.1.5

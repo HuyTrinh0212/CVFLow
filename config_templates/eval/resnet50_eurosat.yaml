@@ -1,0 +1,20 @@
+# Evaluate: ResNet-50 (classification, dataset=eurosat, 10 labels)
+# Dataset: 10 EuroSAT images (sample) - folder must contain images/ + labels/
+# Usage: python main.py config_templates/eval/resnet50_eurosat.yaml
+input_path: "/path/to/dataset"   # folder with images/ + labels/
+weight_path: "/path/to/ResNet-50_Eurosat_FP32.onnx"
+output_path: "/path/to/output"
+
+model_name: "resnet50"
+precision_format: "fp32"
+dataset: "eurosat"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: false
+evaluate_mode: true
+
+tracking_option: false
+display: false

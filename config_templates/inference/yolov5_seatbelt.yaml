@@ -1,0 +1,56 @@
+# =========================================================================
+# YOLOv5 Seatbelt - READY-TO-RUN (FP32 + 4 precision variants)
+# Model : Yolov5_Seatbelt (4 classes: 0=Cellphone_calling, 1=Cellphone_texting,
+#         2=Person_with_seatbelt, 3=Person_without_seatbelt)
+# Preprocess (validated per-image sweep, 2026-11-06):
+#   - geometry: stretch 640x640 (CHANGED from letterbox - big gain: detects
+#     all 3 belted persons at conf .923/.877/.797 vs only 1 object weakly
+#     with letterbox; mAP@0.5 0 -> 0.3366 on the test image)
+#   - normalization: RGB [0,1] (divide 255). mean/std keys are INERT in the
+#     current YOLOPreprocessor (normalization line commented out); ImageNet
+#     mean/std or 0..255 scale made the model collapse (mAP -> 0).
+# Sweep artifacts: ~/Downloads/xaip_preprocess_experiments/
+# Usage: python main.py config_templates/inference/yolov5_seatbelt.yaml
+# =========================================================================
+
+# Input / output
+input_path: "/path/to/input"   # video (.mp4/.avi/.mov/.mkv) or image
+output_path: "/path/to/output"
+
+# Model selection
+model_name: "yolov5"
+precision_format: "fp32"
+# All precision variants (switch via precision_format; no weight_path needed)
+weight_path_fp32: "/path/to/Yolov5_Seatbelt_FP32.onnx"
+weight_path_fp16: "/path/to/Yolov5_Seatbelt_FP16.onnx"
+# int8 = dynamic W8A8 export; static QDQ variant: Yolov5_Seatbelt_Mixed_FP32_INT8.onnx
+weight_path_int8: "/path/to/Yolov5_Seatbelt_INT8_dynamic.onnx"
+weight_path_bf16: "/path/to/Yolov5_Seatbelt_BF16.onnx"
+
+dataset: "yolo_seatbelt"
+task: "object_detection"
+
+# Target device
+target:
+  device: "cpu"    # options: cpu | gpu
+
+# Mode configuration (exactly ONE of the three main modes = true)
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+tracking_option: false
+display: false
+
+# --------- Preprocess (THE VALIDATED CONFIG) ---------
+target_size: [640, 640]
+resize_mode: "stretch"        # stretch outperforms letterbox for this model
+input_dtype: "fp32"           # fp32 auto for fp32; set "fp16" only if fp16 IO issues
+mean: [0.0, 0.0, 0.0]         # inert (RGB [0,1] pipeline), documented as no-op
+std: [1.0, 1.0, 1.0]          # inert (see above)
+# --------- ------------------------------------------------
+
+# Postprocess / eval thresholds
+conf_threshold: 0.3
+iou_threshold: 0.5
+transpose_output: false
+default_postprocess: "draw_box"

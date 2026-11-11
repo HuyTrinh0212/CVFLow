@@ -1,0 +1,21 @@
+# Debug: yolov5 dota_satellite variant (fp32) - single image input
+# Note: model_name must be "yolov5"; DOTA variant selected via dataset + weight_path.
+# Usage: python main.py config_templates/debug/yolov5_dota.yaml
+input_path: "/path/to/image"   # single image only
+weight_path: "/path/to/Yolov5s_DOTA_Satellite_FP32.onnx"
+output_path: "/path/to/output"
+
+model_name: "yolov5"
+precision_format: "fp32"
+dataset: "dota_satellite"
+input_dtype: "fp32"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: true
+evaluate_mode: false
+
+tracking_option: false
+display: false

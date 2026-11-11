@@ -1,0 +1,20 @@
+# Evaluate: RT-DETR (object_detection, dataset=coco, 80 labels)
+# Dataset: 10 COCO val images (sample) - folder must contain images/ + labels/
+# Usage: python main.py config_templates/eval/detr_coco.yaml
+input_path: "/path/to/dataset"   # folder with images/ + labels/
+weight_path: "/path/to/Detection_Transformer_RT-DeTr-l_FP32.onnx"
+output_path: "/path/to/output"
+
+model_name: "detr"
+precision_format: "fp32"
+dataset: "coco"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: false
+evaluate_mode: true
+
+tracking_option: false
+display: false

@@ -1,0 +1,19 @@
+# Debug: lenet5 (fp32) - single image input
+# Usage: python main.py config_templates/debug/lenet5.yaml
+input_path: "/path/to/image"   # single image only
+weight_path: "/path/to/LeNet5_Numbers&Characters_FP32.onnx"
+output_path: "/path/to/output"
+
+model_name: "lenet5"
+precision_format: "fp32"
+dataset: "number_character"
+
+target:
+  device: "cpu"
+
+inference_mode: false
+debug_mode: true
+evaluate_mode: false
+
+tracking_option: false
+display: false

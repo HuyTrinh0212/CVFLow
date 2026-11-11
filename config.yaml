@@ -1,0 +1,23 @@
+# Configuration for AI Pipeline
+
+# Input/Output paths
+input_path: "/home/bht/BHT/AI/Datasets/COCO_Val_2017_10Images"
+weight_path: "/home/bht/BHT/AI/Weights/yolov5_coco2017/Yolov5s_COCO-2017_FP32.onnx"
+output_path: "/home/bht/Downloads/test_xaip"
+
+# Model configuration
+model_name: "yolov5"
+precision_format: "fp32"
+
+# Target device configuration
+target:
+  device: "cpu"  # Options: "cpu" or "gpu"
+
+# Mode configuration
+inference_mode: false
+debug_mode: false
+evaluate_mode: true
+
+# Option configuration
+tracking_option: false
+display: false  # true = show real-time window + q to interrupt, false = headless only save (default)

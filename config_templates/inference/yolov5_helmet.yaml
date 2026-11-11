@@ -1,0 +1,56 @@
+# =========================================================================
+# YOLOv5s Helmet - READY-TO-RUN (FP32 + 4 precision variants)
+# Model : Yolov5s_Helmet (2 classes: 0=head, 1=helmet)
+# Preprocess (validated per-image sweep, 2026-11-06):
+#   - geometry: letterbox 640x640 (KEPT - best on robust post-NMS metric
+#     mAP@[.5:.95] 0.2990 vs stretch 0.2020, matched GT 2/3 both)
+#   - NOTE: stretch detects the dark driver helmet much stronger (conf .886
+#     vs ~.3) -> retest with more labelled images before switching.
+#   - normalization: RGB [0,1] (divide 255). mean/std keys are INERT in the
+#     current YOLOPreprocessor (normalization line commented out); ImageNet
+#     mean/std or 0..255 scale made the model collapse (mAP -> 0).
+# Sweep artifacts: ~/Downloads/xaip_preprocess_experiments/
+# Usage: python main.py config_templates/inference/yolov5_helmet.yaml
+# =========================================================================
+
+# Input / output
+input_path: "/path/to/input"   # video (.mp4/.avi/.mov/.mkv) or image
+output_path: "/path/to/output"
+
+# Model selection
+model_name: "yolov5"
+precision_format: "fp32"
+# All precision variants (switch via precision_format; no weight_path needed)
+weight_path_fp32: "/path/to/Yolov5s_Helmet_FP32.onnx"
+weight_path_fp16: "/path/to/Yolov5s_Helmet_FP16.onnx"
+# int8 = dynamic W8A8 export; static QDQ variant: Yolov5s_Helmet_Mixed_FP32_INT8.onnx
+weight_path_int8: "/path/to/Yolov5s_Helmet_INT8_dynamic.onnx"
+weight_path_bf16: "/path/to/Yolov5s_Helmet_BF16.onnx"
+
+dataset: "yolo_helmet"
+task: "object_detection"
+
+# Target device
+target:
+  device: "cpu"    # options: cpu | gpu
+
+# Mode configuration (exactly ONE of the three main modes = true)
+inference_mode: true
+debug_mode: false
+evaluate_mode: false
+tracking_option: false
+display: false
+
+# --------- Preprocess (THE VALIDATED CONFIG) ---------
+target_size: [640, 640]
+resize_mode: "letterbox"      # keep letterbox for this model
+input_dtype: "fp32"           # fp32 auto for fp32; set "fp16" only if fp16 IO issues
+mean: [0.0, 0.0, 0.0]         # inert (RGB [0,1] pipeline), documented as no-op
+std: [1.0, 1.0, 1.0]          # inert (see above)
+# --------- ------------------------------------------------
+
+# Postprocess / eval thresholds
+conf_threshold: 0.3
+iou_threshold: 0.5
+transpose_output: false
+default_postprocess: "draw_box"
