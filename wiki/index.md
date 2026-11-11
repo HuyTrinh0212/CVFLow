@@ -15,8 +15,10 @@ The wiki documents **architecture and rationale that is verified against source 
 |---|---|
 | [[project/overview|Overview]] | What this project is, architecture, config flow, how it runs |
 | [[project/features|Features]] | How many features are supported — verified inventory with counts |
-| [[project/models|Models]] | How many models are supported — registry truth, tasks, datasets, weights |
 | [[project/precision-quantization|Precision & Quantization]] | Precision labels, weight mapping, IO casting, INT8/BF16 variants, per-model validated behaviors |
+| [[project/conventions|Conventions]] | Naming contracts & kept typos — what must never be renamed |
+| [[project/data-contract|Data Contract]] | Invariants at each module boundary: BGR/NCHW, adapter dict, box semantics, label formats |
+| [[pipeline/error-map|Error Map]] | Invalid config/input → which file catches it first, and how it fails |
 | [[pipeline/mode-flows|Mode Flows]] | High-level (macro) flow of each mode: inference, tracking, debug, evaluate |
 | [[pipeline/debug-internals|Debug Internals]] | ONNX graph rewrite, topological ordering, disk streaming, profiling, cleanup |
 | [[pipeline/output-schemas|Output Schemas]] | Exact output artifacts and schemas per model-task × mode |
