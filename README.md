@@ -40,7 +40,7 @@ Label sets live in `AI_Script/configs/datasets.json`. Run configs and sample dat
 xaip/
 ├── main.py                    # Entry point (accepts config.yaml as argument)
 ├── run.sh                     # Auto-setup script (conda env + run)
-├── check_env.py               # Standalone environment check (GUIDELINE § 1)
+├── check_env.py               # Standalone environment check (GUIDELINE.md)
 ├── environment.yml            # Conda environment (python=3.12)
 ├── requirements.txt           # Pip pins (plain venv alternative — GUIDELINE § 1)
 ├── GUIDELINE.md               # Setup, config, running
