@@ -1,8 +1,6 @@
 # GUIDELINE — Run Guide
 
 > Setup → Config → Run → Outputs. All paths in examples are placeholders (`/path/to/...`) — point them to **your** locations; the project has no preferred storage layout.
-> Architecture & dev conventions → [AGENTS.md](AGENTS.md) · Overview & structure → [README.md](README.md)
-> **New here? Go straight to § 0 Quick Start — it is the only section needed for a first run.**
 
 ## 0. Quick Start
 
